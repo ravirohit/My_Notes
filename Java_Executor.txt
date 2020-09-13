@@ -1,0 +1,240 @@
+-------------------- Topic under Execurtors package -----------------
+BlockingQueue, Lock, Executors, ExcutorsScheduler
+
+================== Doubt ===========================
+ThreadPoolExecutor executor = (ThreadPoolExecutor)Executors.newCachedThreadPool();
+                    OR       
+ScheduledThreadPoolExecutor monitorExecutor = (ScheduledThreadPoolExecutor)Executors.newScheduledThreadPool(1, new ThreadFactory() {
+	private AtomicInteger sequence = new AtomicInteger(0);
+	@Override
+	public Thread newThread(Runnable r) {
+		Thread t = new Thread(r);
+		t.setName("SMSCNodeSessionWindowMonitorPool-" + sequence.getAndIncrement());
+		return t;
+	}
+}); 
+                  OR
+ ExecutorService executor = Executors.newFixedThreadPool(5);
+			 for (int i = 0; i < 10; i++) {
+				Runnable worker = new WorkerThread('' + i);
+				executor.execute(worker);
+			 }
+			 executor.shutdown();
+====================== of Use ============================
+-> Java class level lock vs. object level lock
+   : both are exclusive .. means both can run concurrently.
+   https://stackoverflow.com/questions/3718148/java-class-level-lock-vs-object-level-lock
+-> Executor, ExecutorService and ScheduledExecutorService are Interface only.
+-> This is around the Executor interface, its sub-interface ExecutorService, and the ThreadPoolExecutor class that implements both interfaces.
+-> With an executor, you only have to implement the Runnable objects and send them to the executor. It is responsible for their execution, instantiation, and running with necessary threads. 
+-> it goes beyond that and improves performance using a pool of threads. When you send a task to the executor, it tries to use a pooled thread for the execution of this task, to avoid continuous spawning of threads.
+-> The thread pools created by Executors class always return a reference of ExecutorService, which provides access to both submit() and execute() method
+-> Q) Executors.newCachedThreadPool() versus Executors.newFixedThreadPool()
+-> interface
+   Executor
+   ExecutorService
+   ScheduledExecutorService
+   ThreadFactory
+-> classes:
+   Executors
+   ThreadPoolExecutor
+   ScheduledThreadPoolExecutor
+-> ThreadLocal object implementation           VVI
+
+====================  ThreadPoolExecutor(class) ======================================
+-> the Executor interface, its sub-interface –ExecutorService and the class-ThreadPoolExecutor, which implements both of these interfaces.
+-> ThreadPoolExecutor is a ExecutorService that executes submitted Runnable task.
+-> Explanation: ThreadPoolExecutor is instantiated by passing core pool size, maximum pool size, idle thread alive time, time unit for alive time, BlockingQueue, ThreadFactory and RejectedExecutionHandler. When a new request arrives, a new thread is created by ThreadPoolExecutor to serve the request even if idle thread is there in pool. It happens till the ThreadPoolExecutor achieves given core pool size. Thread is created by using ThreadFactory. Idle thread alive time does not apply on idle threads if pool size is less than or equal to core pool size. Now if a request arrives and pool size is equal to core pool size then first idle thread will serve the request and if there is no idle thread only when a new thread is created up to the maximum thread pool size. When pool size is larger than core pool size then idle thread will die after given alive time to release the resources. No thread will be created if the pool size has reached up to the maximum pool size. Now if a request arrives and no thread is idle to serve the request, then all the subsequent request will go in queue. Once a thread from pool becomes idle, then request from queue will be served. If ThreadPoolExecutor is unable to serve the request due to some reason then it throws RejectedExecutionException. This request is handled by RejectedExecutionHandler.
+
+	ThreadPoolExecutor(int corePoolSize, //For every new request a new thread is created up to the core pool size even there are idle threads in pool. 
+				   int maximumPoolSize, // all the threads in core pool size are busy then a new thread is created until it reached the max pool size.
+				   long keepAliveTime,  // This is a waiting time for an idle thread to die. 
+				   TimeUnit unit, 
+				   BlockingQueue<Runnable> workQueue,    //  It holds the task before it is executed.
+				   ThreadFactory threadFactory, 
+				   RejectedExecutionHandler handler
+				   ) 
+-> What is difference between ThreadPool and ThreadPoolExecutor?
+Ans: A thread pool is a collection of pre-initialized threads. 
+   https://howtodoinjava.com/java/multi-threading/java-thread-pool-executor-example/
+-> what is difference between cache threadpool and fixed threadpool?
+-> custom implementation of threadpool:
+   https://howtodoinjava.com/java/multi-threading/java-thread-pool-executor-example/
+================== Thread Factory(Interface) ===============================
+-> Thread Factory: With this factory, we centralize the creation of objects.
+-> The centralization of creation logic brings us some advantages e.g.
+   1. It’s easy to change the class of the objects created or the way we create these objects.
+   2. It’s easy to limit the creation of objects for limited resources. For example, we can only have N objects of a type.
+   3. It’s easy to generate statistical data about the creation of the objects.
+-> In java, we usually create threads using two ways i.e. extending thread class and implementing runnable interface. Java also provides an interface, 
+   the ThreadFactory interface, to create your own Thread object factory.
+-> Using ThreadFactory you can customize the threads created by executor so that they have proper thread names, priority or even they can be set to be  
+   daemon also.
+================= Java Scheduler ================================
+-> How to schedule task in Java using Concurrent package?
+   -> it can be schedule using below method return ScheduledExecutorService(Interface) Object.
+      1. Executors.newScheduledThreadPool(Integer) or 
+	  2. Executors.newScheduledThreadPool(Integer, ThreadFactory)
+-> what is ScheduledExecutorService?
+Ans: it is an interface declared as below:
+     public interface ScheduledExecutorService extends ExecutorService {}
+-> 1. Executors.newScheduledThreadPool(Integer): Integer limits the number of task which can be run by ScheduledExecutorService ref simultaneously.
+         Ex: if Integer value is 1. then ScheduledExecutorService ref may have all the task from our code but will run one at a time. means once one
+		     will complete then will start another one.
+					ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+					for(TaskToRun task: taskToRun) {                      // TaskToRun is user defined Class implementing Runnable interface
+						executor.schedule(task, 5, TimeUnit.SECONDS);     // executor will take the task but in back   
+						                                                  // end will one after another.
+						System.out.println("------------");               // executor doesn't keep current running Thread on Hold. 
+					}
+	-> 5 indicates what: The period of time you want the task to wait before its execution.
+-> 2. Executors.newScheduledThreadPool(Integer, ThreadFactory):
+-> -> There are three methods which you can use to schedule task using ScheduledThreadPoolExecutor.
+	1. schedule
+	2. scheduleAtFixedRate   Ex: ScheduledFuture<?> result = executor.scheduleAtFixedRate(task1, 2, 5, TimeUnit.SECONDS);
+	3. scheduleWithFixedDelay
+	
+================ Q&A =========================
+Q) what is problem with java timer to schedule the task?
+Ans: the problem with timers task is that you can execute one task at a time.So if the current task takes longer subsequent job will be delayed. 
+
+Q) As we know, in ExecutorService or ScheduledExecutorService maintain itself from creation of new Thread till termination. we just have to pass the runnable implemented class. So, my question is how we can change default value of created thread(like, name, priority or make it demon thread).
+Ans: Here ThreadFactory interface come into picture.
+
+Q) Advantage of ThreadPool:
+Ans: if there is situation of restrictions on how many Threads an application can spawn.
+     also prevent resource exhaustion errors like "java.lang.OutOfMemoryError: unable to create new native thread".
+	 it's a good idea is to use a pool of thread to execute tasks in parallel, instead of creating a new thread every time a request come in.
+Q) Difference between Executor(interface), ExecutorService(interface) and Executers(utility class) in Java available from java 1.5.
+Ans: All three provides Threadpool facilities .
+    -> Executor is the core interface which is an abstraction for parallel execution.
+	-> It separates task from execution, this is different from java.lang.Thread class which combines both task and its execution.
+	-> ExecutorService is an extension of Executor interface and provides a facility for returning a Future object and terminate, or shut down the 
+	   thread pool.
+	   -> Once the shutdown is called, the thread pool will not accept new task but complete any pending task. 
+	-> Third one Executors is a utility class similar to Collections.
+	   -> which provides factory methods to create different types of thread pools e.g. fixed and cached thread pools.
+	   -> Executors class provides factory methods to create different kinds of thread pools e.g. newSingleThreadExecutor() creates a thread pool of 
+	      just one thread, newFixedThreadPool(int numOfThreads) creates a thread pool of fixed number of threads and newCachedThreadPool() creates new threads when needed but reuse the existing threads if they are available.
+ -> Difference in detail with some value:
+    1. former is a parent interface while ExecutorService extends Executor
+	2. execute() method is available in Executor interface while submit() method is available in ExecutorService.
+	3. ExecutorService also provides methods to control the thread pool e.g. terminate the thread pool by calling the shutDown() method.
+	
+Q) This is also the key difference between submit() and execute() method? 
+Ans: 1. The return type of submit() method is a Future object but return type of execute() method is void.
+     2. The submit() method is declared in ExecutorService interface while execute() method is declared in the Executor interface.
+	 3. The submit() can accept both Runnable and Callable task but execute() can only accept the Runnable task.
+Q) what is difference between Thread and executor?
+Q) Explain the below code snippet.
+			 ExecutorService executor = Executors.newFixedThreadPool(5);
+			 for (int i = 0; i < 10; i++) {
+				Runnable worker = new WorkerThread('' + i);
+				executor.execute(worker);
+			 }
+			 executor.shutdown();
+Ans: In above program, we are creating fixed size thread pool of 5 worker threads. Then we are submitting 10 jobs to this pool, since the pool size is  5, it will start working on 5 jobs and other jobs will be in wait state, as soon as one of the job is finished, another job from the wait queue will be picked up by worker thread and gets executed.
+
+Q) Explain the following method what they are used for:
+   Executers.newSingleThreadExecutor()
+   Executors.newFixedThreadPool(int numOfThreads)
+   Executors.newCachedThreadPool();       // why it is not suggestible to use
+   Executors.newScheduledThreadPool(1, ThreadFactory)
+ 
+
+Q) Explain Runnable and Callable interface.
+Ans: 1. Callable interface is available in concurrent package while Runnable not
+     2. Callable can return result and can throw checked exception while Runnable can'take
+	 3. Both are used to encapsulate code which needs to be run in parallel on a separate thread.
+	 4. Both can be used with Executors framework introduced
+	 5. We can also convert Runnable to Callable by using the following utility method
+	      Callable callable = Executors.callable(Runnable task);
+     6. both have a single abstract method.
+     ------
+     1. Runnable is available in Java right from the beginning i.e. JDK 1.0 while Callable was later added to Java 5
+     2. In order to use Callable, you need to override the call() method while in order to use Runnable interface you need to override the run()   
+	    method in Java.
+		 Ex:       
+		   public String call() throws Exception {                  public void run() {
+			Thread.sleep(1000);                                  
+			return Thread.currentThread().getName();                 }
+		}	 
+     3. There is one limitation while using Callable interface in Java that you cannot pass it to Thread constructor as you pass the Runnable instance.
+     4. So in order to execute a Callable instance you need to use the ExecutorService interface of Java 5 Executor framework
+         Ex: 
+             Future holder = exec.submit(aCallable);    //exec is ExecuterService interface ref
+			 result = holder.get();		 
+
+Q) write a code logic, for the below condition:
+    there is one task A take 5 sec to execute and another task B which take 5 sec to execute without any dependency to each other.
+	Once A and B task completed go for the task C. 
+Ans: Future<String> obj1 = executor.submit(A) 
+     Future<String> obj2 = executor.submit(B)          // A & B will execute simultaneously
+	 if(obj1.get() && obj2.get()) {                   // once both executed then will go for the task C
+	    executor.submit(C);
+	 } 
+	 Note: Collable A and B instance, call() method is ruturing boolean type of data. 
+	   Example: 
+	   class CallableFactorialTask implements Callable<Boolean>{ 
+	       @Override
+		   public Boolean call() throws Exception {
+			  ...
+			  return true;
+		   }
+	   }	 
+Q) Does parallel pragramming and asyncronous programming is same? if not what is difference?
+Ans: Both looks same but there is difference between both:
+   - Parallel programming always need more than one thread to acheive it.
+   - Asynchronous can be achieved even though there is only single thread.
+     Example: JS is single threaded but it support Asynchronous programming.
+
+========================= crontab syntax ================
+.---------------- minute (0-59)
+|  .------------- hour (0-23)
+|  |  .---------- day of month (1-31)
+|  |  |  .------- month (1-12) OR jan,feb,mar,apr ...
+|  |  |  |  .---- day of week (0-6) (Sunday=0 or 7) OR sun,mon,tue ...
+|  |  |  |  |
+*  *  *  *  *  
+ex: (cron = "0/20 * * * * ?")  every 20 sec
+(cron="0 0 0 1 1/1 *") (1st of every month)
+(cron="0 0 9 25 * ?") to trigger on 25 of every month at 9 A.M 
+<task:scheduled ref="runScheduler" method="run" cron="0 48 14 4 * ?" />    <!-- every 4th of month at 2:48 : PM --> // in spring
+
+============================ Difference between ReentrantLock and synchronized keyword in Java =================
+-> difference between synchronized and Reentrant lock is tryLock() method.
+   -> Similarly tryLock() with timeout can be used to timeout if lock is not available in certain time period.
+-> synchronized block may cause starvation of waiting thread. while ReentrantLock provide fairness to the waiting thread. 
+   Fairness property provides lock to longest waiting thread, in case of contention.
+-> ReentrantLock also provides convenient method to get List of all threads waiting for lock.
+-> One more worth noting difference between ReentrantLock and synchronized keyword in Java is, ability to interrupt Thread while 
+   waiting for Lock.
+                    ----------- OR -----------
+-> benefits offered by ReentrantLock over synchronized in Java:
+    1) Ability to lock interruptibly.
+	2) Ability to timeout while waiting for lock.
+	3) Power to create fair lock.
+	4) API to get list of waiting thread for lock.
+	5) Flexibility to try for lock without blocking
+-> Drawback:
+   -> drawback of using ReentrantLock in Java is wrapping method body inside try-finally block.
+   -> programmer is responsible for acquiring and releasing lock, which is a power but also opens gate for new subtle bugs, when 
+      programmer forget to release the lock in finally block.
+   
+
+
+
+ 
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+  
+
+	 
+	

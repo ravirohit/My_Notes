@@ -1,0 +1,185 @@
+-> memory leaks: unreachable-but-not-deleted objects in memory. 
+-> In addition to freeing unreferenced objects, a garbage collector may also combat heap fragmentation. Heap 
+   fragmentation occurs through the course of normal program execution.
+-> Advantage of GC:
+   1. heap framentation
+   2. ensure program integrity. if we will free memory manually, it may crash our programme. 
+   3. disadvantage is, it can affect program performance. 
+-> Garbage Collection working:
+   -> A garbage collector must examine all objects it has discovered to be unreferenced to see if any include a 
+	  finalize() method.
+   -> So, Garbage collection run in two pass:
+	  Pass1:
+	    -> Because of finalizers, a garbage collector in the Java virtual machine must perform some extra steps each 
+		   time it garbage collects. 
+		-> First, the garbage collector must in some way detect unreferenced objects (call this Pass I).
+		-> Then, it must examine the unreferenced objects it has detected to see if any declare a finalizer. If it has   
+		   enough time, it may at this point in the garbage collection process finalize all unreferenced objects that declare finalizers.
+	  Pass2:
+	    -> After executing all finalizers, the garbage collector must once again detect unreferenced objects starting 
+		   with the root nodes (call this Pass II). 
+		-> This step is needed because finalizers can "resurrect" unreferenced objects and make them referenced again.
+		-> Finally, the garbage collector can free all objects that were found to be unreferenced in both Passes I and 
+		   II.
+-> follow up question, what is object resurrection and where can we use it?
+Ans: creating reference to the unrefernced object at the time of running GC is called Object resurrection. 
+   Example: public class Immortal {
+				private static final Set<Immortal> immortals = new HashSet<>();
+				@Override
+				protected void finalize() throws Throwable {
+					System.out.println(Immortal.class.getSimpleName() + "::finalize for " + this);
+					immortals.add(this); // Resurrect the object by creating a new reference 
+				}
+			 }
+  -> How to use: 
+	-> we want to do some post-mortal analysis of our objects without changing the actual applications that are using 
+	   the objects. By using object resurrection, we could save those objects and analyze their internal state later, independently of the applications that are using them.
+	-> If an object with a finalizer becomes unreferenced, and its finalizer is run, the garbage collector must in some 
+	   way ensure that it never runs the finalizer on that object again. If that object is resurrected by its own finalizer or some other object's finalizer and later becomes unreferenced again, the garbage collector must treat it as an object that has no finalizer.
+	-> you must keep in mind that it is the garbage collector that runs finalizers on objects. Because it is not 
+	   generally possible to predict exactly when unreferenced objects will be garbage collected, it is not possible to predict when object finalizers will be run. 
+-> The Reachability Lifecycle of Objects:
+    -> Java vesion < 1.2, States of the object in heap from the perspective of garbage collector:
+	    1. Reachable state: if the garbage collector can "reach" the object by tracing out the graph of object 
+		                    references starting with the root nodes.
+		2. Resurrectable state: if it is not currently reachable by tracing the graph of references starting with the 
+		                    root nodes, but could potentially be made reachable again later when the garbage collector executes some finalizer.
+		3. unreachable state: indicates not only that an object is no longer reachable, but also that the object cannot 
+		                    be made reachable again through the execution of some finalizer. 
+    -> Java vesion > 1.2, were augmented by three new states:
+	    1. softly state/reachable: collected when memory crunch is going to happens.//  to implement memory-sensitive caches.
+		2. weakly state/reachable: to implement canonicalizing mappings. 
+		3. phantom state/reachable: Unlike soft and weak references, phantom references are not automatically cleared by the 
+		                            garbage collector as they are enqueue.
+			-> An object that is reachable via phantom references will remain so until all such references are cleared or 
+			   themselves become unreachable.
+	-> Any object referenced directly from a root node, such as a local variable, is strongly reachable. 
+	-> Likewise, any object referenced directly from an instance variable of a strongly reachable object is strongly 
+	   reachable.
+-> yet to study:
+    https://www.artima.com/insidejvm/ed2/gc15.html
+-> in tracing collector algorithm, there is concept of tree root. so here question what object will
+   be condidate for GC root:
+   1. Local variables in the main method
+   2. The main thread.
+   3. Static variables of the main class.
+--------------------------- GC root ---------------------
+-> A garbage collection root is an object that is accessible from outside the heap.
+-> There are several kinds of GC roots. One object can belong to more than one kind of root. The root kinds are:
+   1. Class 2. Thread 3. Stack Local 4. JNI(Java Native Interface) local 5. JNI Global 6. Monitord used(objects used as a monitor for synchronization)  7. Thread block(An object that was referenced from an active thread block.) 
+-> Promotion rate: The promotion rate is measured in the amount of data propagated from the young generation to 
+                   the old generation per time unit.
+				-> It is often measured in MB/sec
+-> premature promotion: Such a situation, where objects with a short life expectancy are not collected in the 
+                young generation and get promoted to the old generation, is called premature promotion.
+
+---------- minor GC:
+https://medium.com/@krishankantsinghal/understanding-garbage-collection-using-visualvm-7e1520cb4ec0
+https://www.dynatrace.com/news/blog/major-gcs-separating-myth-from-reality/
+https://docs.oracle.com/cd/E19900-01/819-4742/abeik/index.html
+https://blogs.oracle.com/jonthecollector/the-second-most-important-gc-tuning-knob
+https://www.journaldev.com/16659/garbage-collection-in-java
+https://dzone.com/articles/java-gc-causes-distilled
+-> Minor GC: Collecting garbage from Young space (consisting of Eden and Survivor spaces) is called a Minor GC. 
+      - Minor GC is always triggered when JVM is unable to allocate space for a new Object, e.g. the Eden is 
+	     getting full. 
+      - So the higher the allocation rate, the more frequently Minor GC is executed.
+	  - cleaning Eden and Survivor spaces is carried out with Mark and Copy instead of Mark, Sweep and Compact.
+	  - Why Minro GC don't perform compact on memory.
+-> Major GC: 
+      - Major GC is cleaning the Tenured space.
+	  - Full GC is cleaning the entire Heap – both Young and Tenured spaces.
+	  -  many Major GCs are triggered by Minor GCs(explain).
+	  
+-> Full GC: 
+      - A Full GC will be triggered whenever the heap fills up.
+	  - In such a case the young generation is collected first followed by the old generation. If the old generation is too full 
+	    to accept the content of the young generation, the young generation GC is omitted and the old generation GC is used to collect the full heap, either in parallel or serial.
+	  - Full GC is cleaning the entire Heap – both Young and Tenured spaces.
+	  - A Full GC where in both the young and old generations are collected occurs when there's change in region size.
+	    Example: 
+		  -Xms1024m -Xmx2048m 
+		- JVM initially starts with 1GB of heap but reserves space for 2GB from OS. So as the usage of these regions increases, 
+		  based on VM ergonomics, Young and old generations are resized until they reach the max reserved size of 2GB.
+	  - https://blog.gceasy.io/2016/11/22/eliminate-consecutive-full-gcs/
+   
+   
+   
+   
+-------------
+-Xms and -Xmx:- min and max heap size.
+              - The difference between -Xmx and -Xms is virtual memory (virtually committed).
+-XX:NewRatio=3 - means that the ratio between the young and tenured generation is 1:3.
+               - In other words, the combined size of the eden and survivor spaces will be one-fourth of the total heap size.
+			   - default value is 2.	
+-XX:NewSize - Size of the young generation at JVM init. Calculated automatically if you specify -XX:NewRatio
+            - Default value is 1310M.
+-XX:MaxNewSize - The largest size the young generation can grow to (unlimited if this value is not specified at command line)
+               - default value is not limited.
+XX:SurvivorRatio:- used to tune the size of the survivor spaces, but this is often not important for performance.
+                 - For example, -XX:SurvivorRatio=6 sets the ratio between eden and a survivor space to 1:6.
+				 - In other words, each survivor space will be one-sixth the size of eden, and thus one-eighth the size of the 
+				   young generation (not one-seventh, because there are two survivor spaces).
+				 - default value is 8.
+XX:MaxTenuringThreshold=1
+                 - https://stackoverflow.com/questions/13543468/maxtenuringthreshold-how-exactly-it-works
+-XX:+DisableExplicitGC: disabled the explicit System.gc() calls. 
+                 - needed Full GC is running frequently even though there is enough free space.
+				 - which resulted in JVM triggering full GC whenever an internal application calls system.gc().
+XX:MaxGCPauseMillis: in case, GC running is taking longer time. then we can explicitly provide this tunable to force the GC 
+                   pause time max to provided value.
+-XX:+PrintGCDetails: - enable GC log printing
+-Xloggc:/opt/tmp/myapp-gc.log: location of GC log file
+
+----
+seen example.. where NewSize and SurvivorRatio is provided.
+   
+============================ Monitor JVM Heap Capacity and Utilization ======
+[root@vbox20 ~]# jstat -gccapacity 11197
+ NGCMN    NGCMX     NGC     S0C   S1C       EC      OGCMN      OGCMX       OGC         OC       MCMN     MCMX      MC     CCSMN    CCSMX     CCSC    YGC    FGC
+     0.0 2097152.0 1320960.0    0.0 2048.0 1318912.0        0.0  2097152.0   776192.0   776192.0      0.0 1116160.0  77772.0      0.0 1048576.0  11724.0  62515     4
+[root@vbox20 ~]# jstat -gc 11197
+ S0C    S1C    S0U    S1U      EC       EU        OC         OU       MC     MU    CCSC   CCSU   YGC     YGCT    FGC    FGCT     GCT
+ 0.0   2048.0  0.0   2048.0 1318912.0 16384.0   776192.0   251678.9  77772.0 75713.8 11724.0 11156.4  62515 1434.960   4      0.911 1435.871
+
+		  
+=========================== Q&A ===========================
+Q) what is the purpose of finalize() method or why do we override it? How it is different from finally block.
+Ans: The finalize method is declared in the java.lang.Object class. 
+  -> Firstly,The purpose of finalization is to give an unreachable object the opportunity to perform any cleanup, 
+     before the object gets garbage collected.
+  -> The finailze() method should be overridden for an object to include the clean up code or to dispose of the system 
+     resources that should to be done before the object is garbage collected.
+  -> finally block is to be executed after the try or try-catch, it's created for special purposes, but the GC doesn't 
+     care if there is a finally block or not, it will be available when an object is eligible to be Grabaged.
+  -> Finally block: If an exception is thrown prior to the try block, the finally code will not execute. The finally 
+           block always executes when the try block exits. So you can use finally without catch but you must use try. 
+Q) How will you decide, Minor GC is becoming Expensive?
+Ans: When GC Cycle take longer time to execute Which may be because of many live objects in Eden and surviour heap. Frequent 
+   running of Minor GC does mean, it is expensive.
+Q) What is CMS(concurrent-mark-sweep) GC?
+Q) Explain the term tenure threshold.
+Q) How can we optimize the transactional memory usage of the appiation with allocation analysis?
+Q) Relation between chunk rate and GC tunning.
+Q) What is cause of Major GC collection?
+Ans: premature object tenuring and solution increase the tenure threshold or increase the Old gen memory size/ total JVM 
+   allocated memory.
+   -> even it is not solving the prblm. there might be memory leak.
+Q) While GC run, does it stop all the application threads or it is able to run concurrently with the application threads.
+Q) What is difference between minor GC, Major GC and Full GC?
+Q) Garbage collection:
+   Serial Vs Parallel Vs CMS Vs G1
+Ans: https://dzone.com/articles/garbage-collectors-serial-vs-0
+
+Q) How to find excessive garbage allocation?
+Ans: If garbage collection takes a significant amount of time, it is advised to profile memory allocation to pin-point and 
+   optimize the problematic code.
+Q) How GC mark non-reachable object as it is already not reachable?
+Ans: https://stackoverflow.com/questions/58250484/how-gc-mark-non-reachable-object-as-it-is-already-not-reachable
+
+		   
+  
+		  
+		  
+		  
+	   

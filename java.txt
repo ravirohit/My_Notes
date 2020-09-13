@@ -1,0 +1,262 @@
+link to allow access gmail to less secure app:
+https://myaccount.google.com/lesssecureapps
+
+
+------------------ Java Profiler ----------
+-> A Java Profiler is a tool that monitors Java bytecode constructs and operations at the JVM level. 
+-> the Popular Java Profilers: JProfiler, YourKit, Java VisualVM, and the Netbeans Profiler.
+
+----------------- Stream:
+-> it is not a data structure and Parallelizable.
+-> A collection is an in-memory data structure to hold values and before we start using collection, all the values should have been populated. Whereas a java Stream is a data structure that is computed on-demand.
+-> Java Streams are consumable, so there is no way to create a reference to stream for future usage. Since the data is on-demand, it’s not possible to reuse the same stream multiple times.
+-> Java 8 Stream support sequential as well as parallel processing, parallel processing can be very helpful in achieving high performance for large collections.
+-> there is two type of iteration in the Java:
+  Internal iteration: the iteration which iteration logic is controlled by java framework. ex stream loop
+  external iteration: the iteration which iteration logic is controlled by user. ex: for loop, while loop etc. 
+-> way to create Stream:
+		Stream<Integer> stream = Stream.of(1,2,3,4,5,6,7,8,9);
+		Stream<Integer> stream = list.stream();
+-> Steam to collection:
+       List<Integer> evenNumbersList = stream.filter(i -> i%2 == 0).collect(Collectors.toList());
+	   Integer[] evenNumbersArr = stream.filter(i -> i%2 == 0).toArray(Integer[]::new);
+	  messagingSessions.stream().filter(p -> p.getName().equals(sessionName)).findFirst().orElse(null);
+	  messagingSessions.removeIf(p -> p.getName().equals(sessionName));
+-> Intermediate operations return the stream itself so you can chain multiple method calls in a row. Let’s learn important ones.
+-> Intermediate operation supported by Stream:
+						1. Stream.filter()  2. Stream.map()  3. Stream.sorted()  4. distinct
+-> Terminal operations: Terminal operations return a result of a certain type instead of again a Stream.
+						operation supported: 
+   1. Stream.forEach()  2.  Stream.collect()  return collection 3.  Stream.match()   return boolean   4. Stream.count()
+   5. Stream.reduce(): This terminal operation performs a reduction on the elements of the stream with the given function. The result 
+                       is an Optional holding the reduced value.
+		            Example: Optional<String> reduced = memberNames.stream()
+                             .reduce((s1,s2) -> s1 + "#" + s2);
+                             reduced.ifPresent(System.out::println);
+-> Stream short-circuit operations: it breaks the operation whenever mataching element occur:
+                   -> operation example: 
+				      1. Stream.anyMatch() 2. Stream.findFirst()
+
+
+     
+
+
+==================== Date Conversion ==========================================================
+					Calendar c =Calendar.getInstance();
+					Timestamp t = new java.sl.timeStamp(c.getTime().getTime());
+					System.out.println(t);  //output format: 2017-02-28 11:52:39:829
+-> conversion from String to date:
+        import java.text.*;  
+		import java.lang.Math; 
+		import java.util.Date;
+		public class HelloWorld
+		{
+		  public static void main(String[] args)
+		  {
+			System.out.println("hiii --- convert String to Date");
+			String d = "08-02-2015 10:12:15";
+			try{
+			  DateFormat c = new SimpleDateFormat("dd-MM-yyyy HH:MM:SS");
+			  System.out.println(c.parse(d));
+			}
+			catch(Exception e){}
+			
+		  }
+		}
+-> conversion of date to string format:
+					DateFormat c = new SimpleDateFormat("yyyy_MM_dd 'T' HH:MM:SS 'Z'");
+					c.format(timestamp/data_object);
+					
+-> conversion of one string date format to another:
+   Step 0: Create a simpleDateformat1 of the date String format as provied. (like above example)
+   Step 1: convert given date string to Date object using simpleDateformat1:
+           Date d = simpleDateformat1.parse(date_string);  
+   Step 2: Create a another simpleDateformat2 of the date String format in which we want to convert the date
+   Step 3: Convert date "d" to the require string format using simpleDateformat2:
+           String date = simpleDateformat2.format(d);
+		   
+-> conversion of localDateTime to GMT:
+   Step 1: Create a simpleDateformat1 object 
+		   DateFormat simpleDateformat1 = new SimpleDateFormat();
+   Step 2: Create timeZone object and set it to the DateFormat Object:
+	       TimeZone timeZone = TimeZone.getTimeZone("GMT");
+		   simpleDateformat1.setTimeZone(timeZone);
+   Step 3: print the GMT time Object:
+		   simpleDateformat1.format(new Date()) // return  GMT time as String Object 
+		   simpleDateformat1.parse(simpleDateformat1.format(new Date())) // return GMT DateTime as Date() object 
+-> conversion of GMT to local time zone. below is suggestion but not tested:
+			SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z",
+																Locale.US);
+			Date date = inputFormat.parse(inputText);
+			// Potentially use the default locale. This will use the local time zone already.
+			SimpleDateFormat outputFormat = new SimpleDateFormat("HH:mm", Locale.US);
+			String outputText = outputFormat.format(date);
+=- =================================================================================================:
+Q) What is Java Native code and why do we need it?
+Ans: Non java language code in JDK is termed as Java Native code. 
+   -> necessary to use native (non-Java) codes (e.g., C/C++) to overcome the memory management and performance constraints in Java. Java supports native codes via the Java Native Interface (JNI).
+Q) what is difference between volatile and static and atomic variable?
+
+Q) Why is it useful to have null values or null keys in hash maps? note: Null not support in treeSet
+Ans: HashMap is newer than Hashtable and fixes some of its limitations.
+I can only guess what the designers were thinking, but here are my guesses:-
+Hashtable calculates a hash for each key by calling hashCode on each key. This would fail if the key were null, so this could be a reason for disallowing nulls 
+as keys. The method Hashtable.get returns null if the key is not present. If null were a valid value it would be ambiguous as to whether null meant that the key
+was present but had value null, or if the key was absent. Ambiguity is bad, so this could be a reason for disallowing nulls as values
+
+Q) What are the method available in the map? How can we iterate through it(also java 8 is similar to es6).
+Ans:
+map.put(key,value);
+map.get(key);
+map.keySet() => return set of key;
+map.values()
+map.entrySet() => return set of entry of type  Map.Entry<E, E> entry =>  entry.getKey(), entry.getValue(); 
+map.containsKey()
+
+Q) method available in the Collections class.
+Ans:
+Collections.max(list)
+Collections.min(list)
+Collections.addAll(list, "Servlet","JSP");  
+Collections.reverse(List myList)
+Collections.copy(List dest, List src)
+Collections.synchronizedCollection(Collection c)
+Collections.sort(List myList)
+Collections.shuffle(List myList)
+Collections.frequency(studentList, "Neeraj"))
+
+Q) How can we find all the key in the map, having value null object?
+Ans: Note: if key is having value or not, both case return null. so to avoid it, first we need to check if key is available then go for getting value.
+Hint: Map.containsKey() and  Map.get(Object)
+
+Q) what is default implementation of the hashcode() and equals() method?
+Ans:
+hashcode(): This is typically implemented by converting the internal address of the object into an integer, but this implementation technique is not required by the JavaTM programming language bject.hashcode() is a native method.
+   public native int hashCode();
+That means it's implemented in platform specific code and is exposed as a native method.
+
+Q) what do you understand from native method in java?
+Ans: Java native code necessities:
+h/w access and control.
+use of commercial s/w and system services[h/w related].
+use of legacy s/w that hasn't or cannot be ported to Java.
+Using native code to perform time-critical tasks.
+Example:
+Main.java:
+public class Main {
+    public native int intMethod(int i);
+    public static void main(String[] args) {
+        System.loadLibrary("Main");
+        System.out.println(new Main().intMethod(2));
+    }
+}
+	Main.c:
+	#include <jni.h>
+	#include "Main.h"
+	JNIEXPORT jint JNICALL Java_Main_intMethod(
+		JNIEnv *env, jobject obj, jint i) {
+	  return i * i;
+	}
+
+	Compile and run:
+	javac Main.java
+	javah -jni Main
+	gcc -shared -fpic -o libMain.so -I${JAVA_HOME}/include \
+	  -I${JAVA_HOME}/include/linux Main.c
+	java -Djava.library.path=. Main
+	Output:
+	4
+Q) write a java programme to lunch google chrome. 
+Ans: hint Process process = Runtime.getRuntime().exec("");
+Q) write a java programme to lunch bat file.
+Q) How to find number of processor available in the JVM?
+Ans: Runtime.getRuntime().availableProcessors();
+Q) How to find out amount free memory in JVM?
+Ans: Runtime.getRuntime().freeMemory()
+Q) what is use of readResolve() method in serialization?
+Ans: 
+Q) explain Java serialization: readObject() vs. readResolve() - Stack Overflow
+Q) Name features of the concurrent package in java 1.5.
+Ans: CountDownLatch, CyclicBarrier, Semaphore, Atomic variables, Thread pool, SchedulerThreadPool.
+Q) How can we make custom annotation to work? or in other word how to use them and how they're processed by the JVM
+Ans: 
+
+Q) Can we create the object of the class with private constructor? give Example.
+Ans: yes, it is possible using java reflection concept which is also used by spring framework also.
+Q) Can we encrypt whole folder in java?
+Ans: I'm not sure why you are doing this, but Java can't encrypt a folder. A folder is part of the OS, and it contains no data.
+
+Q) what is difference between below two ways of creating map?
+		1. Collections.singletonMap(key, value) 
+		2. Map<KeyType, ValueType> m = new HashMap<KeyType, ValueType>();
+		   m.put(key, value);
+Ans: first way of creating map is much nicer when you only have a single key/value pair. while another way, maintains an 
+   internal array of Node objects plus other member fields.
+Q) How can child threads still execute even after that their parent thread die or terminate?
+Ans: Java has no real concept of "child" threads. When you start a thread it inherits the daemon and priority from the "parent" but that's the end of the parent/child relationship.
+Q) Can Java heap have a size larger than actual physical memory?
+Ans: Yes. Paging. Memory can be written to and from disk, allowing you to exceed the RAM limitations of the computer. Its just very slow, especially if it starts thrashing.
+   -> which means that the mark phase of the garbage collection process will thrash the OS page swap mechanism.
+            IN OTHER WORDS
+   ->  if our application happens to request more memory than the allocated limit, the operating system uses the swap space from the hard drive as a virtual memory.
+Q) How to identify default Java heap size in Windows.
+Ans: Please find the below command to find the default size to be allocated and initial default size to be located in jvm:
+	C:\windows\system32>javaw -XX:+PrintFlagsFinal | find "MaxHeapSize"
+	uintx MaxHeapSize                              := 2122317824      {product}
+	C:\windows\system32>javaw -XX:+PrintFlagsFinal | find "InitialHeapSize"
+	uintx InitialHeapSize                          := 132531136       {product}
+NOTE: Here, the unit of MaxHeapSize and InitialHeapSize is bytes.
+NOTE my believe default value is 16MB to 216MB
+   
+======================= Encryption and Decryption =============================
+-> encryption and decryption java code for image file:
+	-> encryption code:
+				Cipher cipher=Cipher.getInstance("AES");
+				KeyGenerator keyGen=KeyGenerator.getInstance("AES");
+				Key key=keyGen.generateKey();
+				cipher.init(Cipher.ENCRYPT_MODE, key);
+				CipherInputStream  cipherIn=new CipherInputStream(new FileInputStream(new File("C:\\Project_Work\\image.jpg")), cipher);
+				FileOutputStream fos=new FileOutputStream(new File("C:\\Project_Work\\filename.jpg"));
+				
+				int i; 
+				while((i=cipherIn.read())!=-1){
+					fos.write(i);
+				}
+	-> decryption code:
+				Cipher cipher1=Cipher.getInstance("AES");
+				cipher1.init(Cipher.DECRYPT_MODE, key);
+				CipherInputStream  cipherIn1=new CipherInputStream(new FileInputStream(new File("C:\\Project_Work\\filename.jpg")), cipher1);
+				FileOutputStream fos1=new FileOutputStream(new File("C:\\Project_Work\\filename123.jpg"));
+				int i1; 
+				while((i1=cipherIn1.read())!=-1){
+					fos1.write(i1);
+				}
+Q) What is stateless and stateful singleton bean?
+Q) Class com.hp.opencall.enabler.xmlrpc.service.XmlrpcServicesService is on the classpath, but was ignored because a class it  references was not found: com.thoughtworks.xstream.io.HierarchicalStreamDriver from [Module "com.hpe.opencall.enabler.xmlrpc.xmlrpc-cli:main" ...
+                         OR
+    -> what is module.xml? this is linked with the above error.
+	                     OR
+   Unsatisfied dependency exception should differentiate between "class is not in classpath", "class is in classpath but not managed bean" and "class is in classpath and managed but not like that
+   // https://issues.jboss.org/browse/WELD-964
+Solution: Entry for the dependency file is not added in the module.xml
+Q) follow up question from the prev question.
+  -> what is difference between beans.xml and module.xml and structs-config.xml file?
+  hint:// beans.xml is used in CDI dependency injection.
+Ans: 
+Q) Java HashMap.get(Object) infinite loop?     // this error is for java < 8 version.
+Ans: https://stackoverflow.com/questions/35534906/java-hashmap-getobject-infinite-loop
+================= Error ==========
+Error:
+ Could not find or load main class com.learn.hibernate.entity.inheritance.App   // run as java application
+Solution: delete the project from eclipse only.
+  go the java source code location and delete files: .classpath and .project and again import project to the 
+  eclipse, it will work fine.
+
+
+
+
+
+
+
+
+

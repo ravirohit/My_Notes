@@ -1,0 +1,110 @@
+-> f	ew name of JVM:
+   1. HotSpot JVM   // Oracle 
+   2. Oracle JRockit
+   3. IBM JVM's. // IBM WebSphere JVM
+-> Oracle JRockit and IBM JRE were not designed with a PermGen space at the first place. while this space is in HotSpot.
+-----------------------------
+-> Explain the whole process from creating a source java file till it will be executed:
+  -> Java source code is converted to the intermediate byte code format file called class.
+  -> Then when we run the main class file with the java.exe the following operation take place:
+  -> Java Virtual machine performs the following operations:
+     1. Loading of the required .class and jar files
+	 2. Assigning references and verification of the code
+	 3. Execution of the code
+	 4. Provides a runtime environment for the Java bytecode
+-> In Details:
+  -> whenever we run start a java app a new JVM instance will be created. Operation in JVM is majorly divied into category
+     1. Class loading
+	 2. Execution engine
+  1. JVM Class loading: Responsible for reading Java class file code, convert it to binary data stream and import it to
+             to the JVM.
+          -> it create the instance class store into the data area/Method area.
+	      -> There are three types of class loader used by JVM to load the class files.
+		  0. Primordial class loader:  responsible to load class loader like "BootStrap class loader" which is part of JVM and written in 
+		                              native language.
+		  1. Bootstrap Class loader: load jar file from java-home/jdk/bin/lib/*.jar. all written in native language. ex: rt.jar
+		  2. Extension Class Loader: load jar files from java-home/jdk/bin/lib/ext/*.jar.
+		  3. System Class Loader: load all the jar or class files available at the location pointing by system variable
+		                CLASSPATH
+      1.1: JVM Class Linking: Linking is the process of incorporating the binary type data into the runtime state of the 
+	                virtual machine.
+				-> Linking is divided into three sub-steps: 
+				   1. verification 2. preparation 3.resolution.
+				1. verfication: ensure the code follow JVM semantics.
+				2. Preparation: involves allocating memory needed by the type, such as memory for any class variables.
+				3. Resolution: is the process of transforming symbolic references in the constant pool into direct 
+				   references. 
+	  1.2: JVM Class initialization: i beleive it should be come under execution engine bu i am just not sure.
+  2. Execution Engine: This engine executes commands from byte code loaded into the data areas one by one.
+          -> To make the bytecode commands readable to the machine, the execution engine uses two methods.
+		  1. interpretation: The execution engine changes each command to machine language as it is encountered.
+		  2. Just-in-time (JIT) compilation: If a method is used frequently, the execution engine compiles it to native 
+		             code and stores it in the cache. After that, all commands associated with this method are executed directly without interpretation.
+			  NOTE: JIT compilation is not a requirement of the JVM specification, and it is not the only technique that is used to improve JVM performance. 
+ 
+========================== Q&A ===============
+================= JVM =========================
+-> Each instance of the program "java.exe" on Windows is a separate JVM. If you start any two Java-based processes on your computer, they will each be running in their own JVM , whether they be runnig Eclipse or anything else.
+-> It runs in a sandbox environment and ensures that the application does not have access to the local file system, processes, and networking without proper permission.
+-> In case of remote execution, code should be signed with a certificate.
+-> The JVM has the following major subsystems:
+   1. Class Loader. Responsible for reading Java source code and loading classes into the data areas.
+   2. Execution Engine. Responsible for executing instructions from the data areas
+->  By default, the maximum heap size is set to either 1/4th of the physical memory available to the OS, or to 1 GB (whichever is the smallest).
+-> By default, the initial heap size is set to either 1/64th of the physical memory available to the OS, or to some reasonable minimum that is different for different platforms (whichever is the largest).
+Q) Is it possible for a JVM to run more than one program at the same time?  
+   To run a program, we simply do
+   #java ProgramName
+Ans: The Java programs that have a main method and that you start with java NameOfClass typically cannot be run in the same JVM because there's no builtin separation of resources or namespaces. For example, what if the two programs use conflicting versions of the same library?
+	 -> We also have applications that are designed to share a JVM, such as enterprise applications. 
+	 -> An application server keeps the applications resources separate using class-loaders and security managers. For example, two applications may use conflicting versions of a library or conflicting class names and still share a JVM thanks to being loaded through different classloaders.
+	 
+Q) From the above question, it arises one more question, does application server has it's separate class loader from JVM? 
+Ans: yes, which make it sure to run multiple JEE application in the one JVM. this is my understanding.
+   http://karunsubramanian.com/websphere/where-does-jvm-fit-in-a-jee-application-server/
+
+Q) When we need to call a method of ObjectB in Jvm2 from a client ClassA which is in another jvm Jvm1.. We need to use RMI ...Does the same apply to 2 Jvms running in the same machine and sharing same memory (RAM)..  Can we create sample RMI code and test it on the same machine ?? 
+Ans: Two JVMs cannot run and share memory. Each has its own heap, in different areas of RAM. 
+You would need to use sockets, multiple agents, RMI or similar to access code on different JVMs. You can try it out with two JVMs on the same machine, yes.
+
+-> RMI: The Java Remote Method Invocation (RMI) system allows an object running in one Java virtual machine to invoke methods on an object running in another Java virtual machine. RMI provides for remote communication between programs written in the Java programming language.
+
+Q) Can we run one JVM inside another JVM?
+Ans: 
+Q) How can we run our two pro-gramme of java in two version of JVM on the same machine?
+Ans: 
+	
+Q) How to deal with load balancing with JVM?
+Ans:
+
+Q) Where we can use JVM in share by multiple java application?
+Ans:
+
+Q) How to Distribute Java Application on Multiple JVMs?
+   Hint: https://www.cacheonix.org/articles/How_to_Distribute_Java_Application_on_Multiple_JVMs.htm
+Ans: 
+
+Q) How to configure wildfly in cluster mode?
+
+Q) How JVM request for memory and OS and after that how did he manage to run the java application?
+Ans: i believe, JVM run native method which is in c language. This native method make a system call to request for memory using malloc() method.
+   once the requested memory is allocated to the JVM rest of the memory management handled by JVM itself..
+
+Q) How can increase the performance of the JVM by tunning it's memory management?
+   link: https://anturis.com/blog/java-virtual-machine-the-essential-guide/
+Ans: things we should note is:
+        if memory will get full frequently then GC will run frequently. More running of GC make our application slow.
+   in details:
+   There is two kind of GC: 1. minor GC for eden and survivor pool 2. major GC for tenured pool.
+   following ways to tune based on observing our application:
+   1. we should have enough heap size to run the application. which will leads to bigger size eden, survivor and tenured pool memory.
+   2. if our application is generating more number of new object frequently then it is obvious eden pool will fill frequently which need minor GC to
+      run. we can set the ratio between the young and old generations without changing the overall heap size. for this we have to know the behaviour of
+	  the application.
+	  
+Q) if two java application running on the same server(jboss/tomcat). can two application can communicate with each other. if 
+   so,how?
+                           OR
+    EJB call from one EAR to another EAR, local or remote?
+Ans: 
+	   

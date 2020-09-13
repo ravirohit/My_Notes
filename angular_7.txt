@@ -1,0 +1,351 @@
+-> what is read write lock
+-> what countdownlatch and cyclicbarrier in thread synchronization.
+----------
+command to install any plugin: npm install -g @angular/cli, npm install @angular/http
+create a angular app: ng new my-first-app
+build app: npm run build 
+start the angular: npm start
+url to access: http://localhost:4200/   
+command to create compoent: ng g component <comp_name>
+                            ng g service sharedInfoContainer
+                            ng generate directive highlight
+-------------- Reading Link ----------
+-> https://printjs.crabbly.com/
+-> https://www.dynamsoft.com/Products/barcode-recognition-javascript.aspx
+   https://stackoverflow.com/questions/10879808/how-hid-devices-work-when-programming
+
+================== Node and Angular command =================
+
+-> npm install: By default, npm install will install all modules listed as dependencies in package.json in node_modules/.
+             -> it installs the current package context (ie, the current working directory) as a global package if we append -g in
+                the command.
+-> npm build: "npm run build" is an alias for npm build.
+             -> it will look for build tag in the package.json file which will generally be "ng build". it build the project and put
+                the generated file in the /dist folder
+             -> it does nothing unless you specify what "build" does in your package.json file.
+-> npm start: it will look for start tag in the package.json file which will generally be "ng serve". 
+              -> it will be like build followed by deploying the angular application.
+-> ng serve --open and ng build: 
+              Both commands ng build and ng serve will clear the output folder before they build the project.
+-----------------------------------------------------------------------------
+VVI: Q&A: https://angular.io/guide/ngmodule-faq
+Q) How to add CSS and JS file in Angular show that it will be globally available.
+Ans: open file angular.json:
+   and add CSS or JS file in following two attribute:
+   "styles": [
+              "src/styles.css",
+              "node_modules/bootstrap/dist/css/bootstrap.css"
+
+            ],
+    "scripts": [
+			   "src/styles.js",
+               "node_modules/bootstrap/dist/css/bootstrap.js"
+	        ],
+Q) what are the purpose of following files?
+   package.json, package-lock.json, main.ts, angular.json, .angular-cli.json, tsconfig.json, node_modules
+Ans: 
+  - package-lock.json: records the exact version of each installed package which allows you to re-install them. Future 
+                       installs will be able to build an identical dependency tree.
+  - package.json: records the minimum version you app needs. If you update the versions of a particular package, the 
+                  change is not going to be reflected here.
+  - main.ts: This is entry point for your app. 
+            - The main.ts file, that is the first code which gets executed.
+            - The job of main.ts is to bootstrap the application.
+			- It loads everything and controls the startup of the application.
+			- main.ts is not a module but a simple script-file, executed from top to bottom and can have any other 
+			  file-name.
+			- it is refer from where ?????????
+  - angular.json: A file named angular.json at the root level of an Angular workspace provides workspace-wide and 
+              project-specific configuration defaults for build and development tools provided by the Angular CLI.
+			- since the releasing of Angular CLI v6-RC2. As you might have noticed, the old configuration file 
+			  .angular-cli.json was replaced by a new one angular.json.
+			- we do add CSS and JS file in our application globally using angular.json file only.
+  - tsconfig.json: The presence of this file in a directory specifies that the said directory is the TypeScript project 
+              root.
+			- allows you to specify the root level files and the compiler options that requires to compile a TypeScript 
+			  project.
+			- Browsers can't execute TypeScript directly. Typescript must be "transpiled" into JavaScript using the tsc 
+			  compiler, which requires some configuration.
+Q) how to create contant file in angular 7?
+Ans: create a folder util -> create a file with ts extension -> export class ConstFile -> define all the variable with static 
+   public
+
+Q) What will you do if you are getting error for [(ngModel)] as:
+    "Can't bind to 'ngModel' since it isn't a known property of 'input'"
+Ans: add below in root module:
+    import { FormsModule } from '@angular/forms';
+			  
+			  
+			  
+------------------- Note -----------------------------------
+-> Angular bootstrap proces consists of the two major stages:
+  1. constructing components tree
+  2. running change detection
+-> Angular component lifecycle: There are 8 different stages in the component lifecycle.
+    -> Every stage is called as lifecycle hook event.
+    -> The constructor of the component class executes, first, before the execution of any other lifecycle hook events.
+    -> ngOnChanges() -> ngOnInit() -> ngDoCheck() -> ... -> ngOnDestroy()
+    1. ngOnChanges(): Invoked every time there is a change in one of th input properties of the component.
+                    NOTE: ngDoCheck and ngOnChanges should not be implemented together on the same component.
+    2. ngOnInit(): Invoked when given component has been initialized.
+                -> This hook is only called once after the first ngOnChanges.
+    3. ngDoCheck(): You can see that ngDoCheck is called on the child component when the parent component is being checked. 
+                -> it’s triggered after ngOnChanges and ngOnInit.
+    4. ngOnDestroy(): This method will be invoked just before Angular destroys the component.
+                -> Use this hook to unsubscribe observables and detach event handlers to avoid memory leaks.
+	5. ngAfterViewInit(); is called after a component's view, and its children's views, are created.
+
+-> Data Sharing: There are four different methods for sharing data between Angular components.
+      1. Parent to Child: Sharing Data via Input:  It works by using the @Input() decorator to allow data to be passed via the template.
+                    -> in parent DOM component used child componet is:
+                          <app-parent>
+                              <app-child [childMessage]="parentMessage"></app-child>
+                          </app-parent>
+                    -> in child component ts file: 
+                           @Input() childMessage: string;
+                    -> we use @Input decorator for reading data from DOM to the custom directives. 
+                           <p appHighlight [highlightColor]="color"></p>   // in html file
+                           @Input() highlightColor:string;                  //in directive ts file appHighlight
+                       where appHighlight is our custom directive which read value from parent component using variable 
+      2. Child to Parent: Sharing Data via ViewChild: ViewChild allows a one component to be injected into another, giving the parent 
+                         access to its attributes and functions. 
+                      -> One caveat, however, is that child won’t be available until after the view has been initialized. 
+                      -> This means we need to implement the AfterViewInit lifecycle hook to receive the data from the child.
+                      -> in parent component ts file:
+                           @ViewChild(ChildComponent) child;   // on class level
+                           ngAfterViewInit() {
+                              this.message = this.child.message
+                            }
+                      -> in child component ts file:
+                           export class ChildComponent {
+                            message = 'Hola Mundo!';
+                          }
+    3. Unrelated Components: Sharing Data with a Service: Here we can use the service component to share the data between unrelated component.
+                        https://jasonwatmore.com/post/2019/02/07/angular-7-communicating-between-components-with-observable-subject
+-> Observable: https://jasonwatmore.com/post/2019/02/07/angular-7-communicating-between-components-with-observable-subject
+           -> The way to communicate between components is to use an Observable and a Subject (which is a type of observable).
+           -> in a nutshell there are two methods that we're interested in: Subject.next(), this.subject.asObservable() and Observable.subscribe().
+NOTE: component, directive and pipe is added in the "declaratoin" of app.module.ts file.
+      while service get added to the "providers".
+	  
+------------------ Data binding -----------
+-> it is used for the communication between ts and html view.   
+-> based on the direction of flow of data or it's behaviour there are following types of data binding:
+   1. one way data binding   (),[],{{}}
+   2. two way data binding. [(ngModel)]  // FormModule need to be imported in application root module.
+-> contents need to know about data binding:
+   1. String interpolation {{}} : String interpolation is used to display dynamic data on HTML template
+   2. property binding     []: example: [disabled]='comp_attr', [innerHtml]='comp_attr', [value]='comp_attr'
+   3. event binding        (): (click), (blur), 
+-> What is difference between string interpolation and property binding:
+   -> String Interpolation is a special syntax which is converted to property binding by Angular. It's a 
+      convenient alternative to property binding.
+   -> When you need to concatenate strings, you must use interpolation instead of property binding.
+   -> Property Binding is used when you have to set an element property to a non-string data value.
+----------------- Service ----------------------   
+-> create folder -> cd to that folder -> run command: ng g service api-util
+-> purpose of below design pattern: 
+     @Injectable({
+ 	   providedIn: 'root'
+     })
+   - In this case, providedIn: 'root' specifies that Angular should provide the service in the root injector.
+   - You should always provide your service in the root injector unless there is a case where you want the service to be 
+     available only if the consumer imports a particular @NgModule.
+   - It's also possible to specify that a service should be provided in a particular @NgModule. For example, if you don't want 
+     UserService to be available to applications unless they import a UserModule you've created, you can specify that the service should be provided in the module:
+	 Example: 
+	    import { Injectable } from '@angular/core';
+		import { UserModule } from './user.module';
+		@Injectable({
+		  providedIn: UserModule,
+		})
+		export class UserService {
+		}
+-> Limit the server component level:
+   - Another way to limit provider scope is by adding the service you want to limit to the component’s providers array.
+   - example: 
+      @Component({
+		/* . . . */
+		  providers: [UserService]
+		})
+   - Component providers and NgModule providers are independent of each other. 
+-> Singleton Service: 
+   There are two ways to make a service a singleton in Angular:
+    1. Set the providedIn property of the @Injectable() to "root".
+	2. Include the service in the AppModule or in a module that is only imported by the AppModule
+------------------ Http Interceptor -----------------
+-> Step implement HttpInterceptpr:
+   Step 1: implement HttpInterceptor interface
+   Step 2: implement intercept(req, next) method
+         - clone the req object: 
+		   let tempReq = req.clone({setHeaders:{Authorization:"Basic 13234343434"}});
+		 - forward the request:
+		   return next.handle(tempReq);
+   Step 3: update the app.module.ts under provider as:
+         providers:[
+		   {
+		     provide:HTTP_INTERCEPTORS,            // come with http client module 
+		     userClass:TokenInterceptorService,    // this is httpinterceptor interface implemented class
+		     multi:true
+		   }
+		 ]
+-> By extending the HttpInterceptor class you can create a custom interceptor to catch all error responses from the server in a 
+   single location.
+-> Handle response using interceptor:
+   - Same interceptor execute for incoming response as well as for outgoing request with little bit of change with adding
+     some code along with next.handle(request) as below:
+	 Example:
+	     next.handle(request).pipe(map((event: HttpEvent<any>) => {
+				if (event instanceof HttpResponse) {
+					console.log('event for success:', event);
+				}
+				return event;
+			}),
+		catchError((error: HttpErrorResponse) => {
+			console.log("error data:",error);
+			return throwError(error);
+		}));
+	NOTE: there is two arguments, arg1 for handling success response while arg2 for handling ERROR response.
+     
+    
+-------------------- Router -------------------
+-> steps to implement Router in Angular:
+   Step 1: map array object for which route what component would be loaded:
+		const routes: Routes = [
+			{path:"login", component:LoginPageComponent}, 
+			{path:"home", component:HomePageComponent} 
+		];
+   Step 2: add it to import property of module:
+        @NgModule({
+		  imports: [RouterModule.forRoot(routes)],
+		  exports: [RouterModule]
+		})
+   Step 3: add below code for routing using <a> tag:
+          <a routerLink = "login">login</a>
+   Step 4: tag where mapped coponent get placed in the view:
+          <router-outlet></router-outlet>
+		  
+-> angular code to route to page:
+    this.router.navigate([this.url]);
+------------------- Modules -------------------
+-> Modules are lazy loading or eager loading?
+   - By default, NgModules are eagerly loaded, which means that as soon as the app loads, so do all the NgModules, whether or 
+     not they are immediately necessary.
+   - 
+-> Advantage of Lazy loading: 
+   - Lazy loading helps keep initial bundle sizes smaller, which in turn helps decrease load times.
+   - Example: 
+      const routes: Routes = [
+		  {
+			path: 'customers',
+			loadChildren: () => import('./customers/customers.module').then(m => m.CustomersModule)
+		  }
+		];
+
+------------------ PIPE ------------------
+-> Pipe is kind of operator or a function which take the input, transform the data as needed and then display 
+   in the view page.
+-> syntax: {{data | pipe_name}}
+-> Example; 
+    -> in ts file and also import it in the app.module.ts file:
+	 @Pipe({
+	   name:'myPipe',
+	   pure: false/true
+	 })
+	 export class MyCustomPipe implements PipeTransform {
+		  transform(val : number) : number {  
+			return Math.sqrt(val);  
+		  }  
+	 }
+	-> in html template file:
+	  {{data | myPipe}}
+NOTE: we can pass the argument also in pipe, just have to add that arguments in transform() method. and 
+      syntax for passing arguments:
+	    {{data | myPipe:arg1}} or
+		<span>{{v1 | customPipe:param1:param2}}</span>
+-> What are different type of pipe in angular:
+    1. Pure pipe: uppercase, 
+	2. Impure pipe: AsyncPipe, JsonPipe and SlicePipe
+-> Pure Meaning: input parameters value determine the output so if input parameters don’t change the output 
+              doesn’t change.
+		   -> can be shared across many usages without affecting the output result.  
+   Impure Meaning: cannot use the input value to determine if the output will change.
+           -> cannot be shared because the internal state can be affected from outside
+		   
+-> with context with angular:
+    1. in case of pure pipe, Even though there are two usages in the template Angular can create only "one pipe" instance which 
+	   can be shared between the usages in case of pure pipe.
+	2. in case of impure pipe, We don’t want the pipe in the second usage to be affected by the call to it in the first usage so 
+	   angular creates "two instances" of the pipe each with its own state.
+	3. with pure functions we can use the input value to determine if the output will change while with impure 
+	   functions we can’t have such guarantee. Thus, it allows Angular to optimize the pipe and call transform method only when input parameters change.
+	4. But if a pipe is impure and has internal state the same parameters do not guarantee that same output, 
+	   It means that Angular is forced to trigger transform function on a pipe instance on every digest.
+	5. So, impure pipes can have significant performance hit if not used wisely and carefully. The performance 
+	   hit comes from the fact that Angular creates multiple instances of an impure pipe and also calls it’s transform method on every digest cycle.
+====================== Q&A ========================
+====================== Error ===========
+Q) core.es5.js:158 Could not find Angular Material core theme. Most Material components may not work as expected.
+Ans:  Please insert below code into your style.css which is located in your src folder.
+       @import "../node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css";
+Q) While accessing backend api, it was throwing error 403 because of CORS prblm.
+Ans: add below annotation on the resource api which need be access by other domain than where backend is deployed.
+     @CrossOrigin(origins = "*", allowedHeaders = "*") // provided by spring mvc
+Q) code changes to implement autocomplete functionality.
+Ans: https://www.tutorialspoint.com/angular_material7/angular_material7_autocomplete
+Q) Difference between Constructor and ngOnInit
+Ans: The Constructor is a default method of the class that is executed when the class is instantiated
+  -> ngOnInit is a life cycle hook called by Angular2 to indicate that Angular is done creating the component.
+Q) (change) vs (ngModelChange) in angular.
+
+Q) difference between [ngModel], (ngModel) and [(ngModel)]?
+Ans: [ngModel]="currentHero.name" is the syntax for one-way binding.
+     [(ngModel)]="currentHero.name" is for two-way binding
+     [ngModel]="currentHero.name" and (ngModelChange)="currentHero.name = $event": If you only need to pass model, use the first one. 
+    If your model needs to listen change events (e.g. when input field value changes), use the second one
+Q) How to disable print preview window in chrome?
+Ans: chrome shortcut -> properties -> edit target to: "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe" --disable-print-preview
+Q) How to include javascript file in angular ts file. or access js function in angular ts file.
+Ans: add js file in the angular.json file under "scripts". 
+Q) what is the use of questionmark in  below expression angular?
+      product?.price 
+Ans; above statement is equal to "product !== null ? product.price : null" ...
+
+Q) How to load data before rendering the component?                      VVI
+Ans: https://www.callibrity.com/blog/angular-2-route-resolves
+     https://www.techiediaries.com/angular-router-resolve/
+Q) What is difference between component and directive?
+Ans: A component is a directive with a view whereas a directive is a decorator with no view.
+   -> A Component is UI building block for angular 2. and Directive is decorator which add behaviour to it.
+   -> create with @Component and directive with @Directive decorator.
+Q) How to solve the circular dependency?
+Ans: we can use Injector for this:
+   Example: 
+     class HttpService {
+	  constructor(private injector: Injector) { }
+	  doSomething() {
+		const auth = this.injector.get(AuthService);
+	  }
+	}
+Q) Angular dependency injection public vs private?
+Ans: https://stackoverflow.com/questions/46596399/typescript-dependency-injection-public-vs-private
+	   
+Q) what is difference between observable and observer?
+Q) How can I select an element in a component template?
+Q) Why Incremental DOM Has Low Memory Footprint?
+Q) What are the ways to control AOT compilation?   // tsconfig.json
+Q) What is activated route(ActivatedRoute)?   // it is injected to access the information about route.
+Q) What is router outlet?
+Q) Why would you use lazy loading modules in Angular app?
+  Ans: Lazy loading is useful when the application size is growing. In lazy loading, feature module will be loaded on demand and hence application start will be faster
+Q) What is incremental DOM? How is it different from virtual DOM?
+Q) what is AOT?
+Ans: An Angular application consists mainly of components and their HTML templates. 
+   - Because the components and templates provided by Angular cannot be understood by the browser directly, Angular applications require a compilation process before they can run in a browser.
+   - The Angular ahead-of-time (AOT) compiler converts your Angular HTML and TypeScript code into efficient JavaScript code during the build phase before the browser downloads and runs that code. 
+Q) JIT vs AOT
+Q) What is the difference between BehaviorSubject vs Observable?
+Q) What is the Angular equivalent to an AngularJS "$watch"?
+
+
+	   

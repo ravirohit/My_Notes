@@ -1,0 +1,337 @@
+----------------------------------  RESTful Web Service Security  ------------------------------------
+-> RESTful Web services can be secured using one of the following methods to support authentication, authorization, or encryption:
+	1. Securing RESTful Web Services Using web.xml
+	2. Securing RESTful Web Services Using SecurityContext
+	3. Securing RESTful Web Services Using Annotations
+---------------------------------------------------------------------------------------------------------------------------------------------------------------
+1. Securing RESTful Web Services Using web.xml
+-> For example, to secure your RESTful Web service using basic authentication, perform the following steps:
+-> Define a <security-constraint> for each set of RESTful resources (URIs) that you plan to protect.
+-> Use the <login-config> element to define the type of authentication you want to use and the security realm to which the security constraints will be applied
+-> Define one or more security roles using the <security-role> tag and map them to the security constraints defined in step 1. For more information, 
+   see "security-role" in Programming Security for Oracle WebLogic Server.
+-> To enable encryption, add the <user-data-constraint> element and set the <transport-guarantee> subelement to CONFIDENTIAL. For more information,
+   see "user-data-constraint" in Programming Security for Oracle WebLogic Server.
+   
+   Ex:
+   <web-app>
+    <servlet>
+        <servlet-name>RestServlet</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RestServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    <security-constraint>
+         <web-resource-collection>
+             <web-resource-name>Orders</web-resource-name>
+             <url-pattern>/orders</url-pattern>
+             <http-method>GET</http-method      // If no HTTP methods are specified, the security constraint applies to all HTTP methods.
+             <http-method>POST</http-method>
+         </web-resource-collection>
+         <auth-constraint>
+             <role-name>admin</role-name> 
+         </auth-constraint>
+    </security-constraint>
+        <login-config>
+            <auth-method>BASIC</auth-method>
+            <realm-name>default</realm-name>
+        </login-config>
+    <security-role>
+        <role-name>admin</role-name>
+    </security-role>
+   </web-app>
+   
+---------------------------------------------------------------------------------------------------------------------------------------------------------------   
+2. Securing RESTful Web Services Using SecurityContext:
+-> takeng help from : https://simplapi.wordpress.com/2015/09/19/jersey-jax-rs-securitycontext-in-action/
+-> Steps how can we use it:
+
+Step 1:
+-> Create a pojo class for UserDetails(uname, password, role list)
+Step 2:
+-> create a custom security constant by implementing SecurityContext 
+   Ex:
+   public class CustomSecurityContext implements SecurityContext {
+    private User user;
+    private String scheme;
+    public CustomSecurityContext(User user, String scheme) {
+        this.user = user;
+        this.scheme = scheme;
+	}
+	@Override
+    public boolean isUserInRole(String s) {
+        if (user.getRole() != null) {
+            return user.getRole().contains(s);
+        }
+        return false;
+    }
+	@Override
+    public String getAuthenticationScheme() {
+        return SecurityContext.BASIC_AUTH;
+    }
+	@Override
+    public boolean isSecure() {return "https".equals(this.scheme);}
+	....
+  }
+-> A little explain just in case:
+--> getUserPrincipal got no use here (as far as I know), but this is reason why we have implemented Principal in the user bean above.
+--> isUserInRole is the main function we will use here. As the user bean uses internally a list, we need to check a given roles exists in the user role list.
+--> isSecure simply indicates if we are in HTTPS or not. Not used here but you can create a filter with this to deny non-HTTPS request for example.
+--> getAuthenticationScheme the scheme used, here it will be HTTP Basic Auth.
+-----> As we see, we got everything to handle every possible interaction with any user here. Now we still need to lock down resources, and create a filter 
+	   to populate our SecurityContext.
+	   
+Step 3:
+-> Create a CustomFilter implementing ContainerRequestFilter.
+   public class AuthFilter implements ContainerRequestFilter {
+      @Override
+    public void filter(ContainerRequestContext containerRequest) throws WebApplicationException {
+        
+    }
+  }
+---> then we will perform the below operation in the filter(){} method of the above class.
+----> Here we will decode username and pwd of BASIC authentication.
+   i.e. get username and pwd from the authorization header.
+----> then will validate and get the user info from the DB for the type UserDetails defined in step 1.
+   as //DO YOUR DATABASE CHECK HERE (replace that line behind)...
+   UserDetails user =  AuthentificationThirdParty.authentification(username, pwd);
+----> // We configure your Security Context here
+   String scheme = request.getUriInfo().getRequestUri().getScheme();  //http or https
+   containerRequest.setSecurityContext(new CustomSecurityContext(user, scheme);
+----> so we add only two lines to add our SecurityContext to it, and it’s not enough (of course), 
+	  we still need to say to Jersey « we want to use SecurityContext », and also, we need to declare our filter.
+	  
+Step 4:
+-> Now i have to make sure this customfilter class will get called before the actual resource method for each URL call.
+--> to Do that, i will create a CustomApplication class extending ResourceConfig and register the CustomFilter as below:
+    Ex:
+	public class CustomApplication extends ResourceConfig
+	{
+		public CustomApplication()
+		{
+			System.out.println("-----------customApplication----------");
+			packages("com.munsiji");   // package which is having resouce controller
+			//register(LoggingFilter.class); 
+			//Register Auth Filter here
+			register(customfilter.class);
+		}
+	}
+--> and then have to declare this CustomApplication.java in the web.xml to get called for each URI call.
+    Ex:
+	<servlet>
+        <servlet-name>jersey-serlvet</servlet-name>
+        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+        <!-- <init-param>
+             <param-name>jersey.config.server.provider.packages</param-name>
+             <param-value>com.munsiji</param-value>                                    // pass this package in the CustomApplication constructor.. which jersey need too access
+        </init-param> -->
+          <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>com.munsiji.secuirity.CustomApplication</param-value>             // customAction.java file which is defined above
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>jersey-serlvet</servlet-name>
+        <url-pattern>/route/*</url-pattern>
+    </servlet-mapping>
+  ------------------------------------------------ OR -----------------------------------------------------------
+				  <?xml version="1.0" encoding="UTF-8"?>
+				<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+						 xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"  version="3.0">
+					<display-name>MyApp</display-name>
+					<servlet>
+						<servlet-name>MyApp</servlet-name>
+						<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+						<init-param>
+							<!-- The package now NEED to reference all classes used on startup -->
+							<param-name>jersey.config.server.provider.packages</param-name>
+							<param-value>
+								com.myapp.api;
+								com.myapp.app;
+								com.myapp.filter;
+								org.glassfish.jersey.filter;
+							</param-value>
+						</init-param>
+				 
+						<!-- Application -->
+						<init-param>
+							<param-name>javax.ws.rs.Application</param-name>
+							<param-value>com.myapp.app.MyApplication</param-value>
+						</init-param>
+						 
+						<!-- Filters -->
+						<init-param>
+							<param-name>javax.ws.rs.container.ContainerRequestFilter</param-name>
+							<param-value>
+								com.myapp.filter.AuthFilter;
+								org.glassfish.jersey.filter.LoggingFilter;
+							</param-value>
+						</init-param>
+						<init-param>
+							<param-name>javax.ws.rs.container.ContainerResponseFilters</param-name>
+							<param-value>
+								org.glassfish.jersey.filter.LoggingFilter;
+							</param-value>
+						</init-param>
+				 
+						<load-on-startup>1</load-on-startup>
+					</servlet>
+					<servlet-mapping>
+						<servlet-name>MyApp</servlet-name>
+						<url-pattern>/myapp/*</url-pattern>
+					</servlet-mapping>
+				</web-app>
+	-----------------------
+	
+Step 5:
+-> Creating a resource
+   Ex:
+    @Path("security")
+	@PermitAll
+	public class SecurityResource {
+		@GET
+		@Path("user")
+		@RolesAllowed("user")
+		public String user(@Context SecurityContext sc) {
+			boolean test = sc.isUserInRole("user");
+			return (test) ? "true": "false";
+		}
+	 
+		@GET
+		@Path("admin")
+		@RolesAllowed("admin")
+		public String admin(@Context SecurityContext sc) {
+			boolean test = sc.isUserInRole("admin");
+			return (test) ? "true": "false";
+		}
+	}
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+3. Securing RESTful Web Services Using Annotations:
+-> 
+   @PermitAll, 
+   @DenyAll  and 
+   @RolesAllowed
+   @DeclareRoles
+   @RunAs
+-> javax.annotation.security.PermitAll:
+     Can be used at type or method level.
+     Indicates that the given method or all business methods of the given EJB are accessible by everyone.
+-> javax.annotation.security.DenyAll:
+     Can be used at method level.
+     Indicates that the given method in the EJB cannot be accessed by anyone.
+-> javax.annotation.security.RolesAllowed:
+     Can be used at type or method level.
+     Indicates that the given method or all business methods in the EJB can be accessed by users associated with the list of roles.
+-> javax.annotation.security.DeclareRoles:
+     Can be used at type level.
+     Defines roles for security checking. To be used by EJBContext.isCallerInRole, HttpServletRequest.isUserInRole, and WebServiceContext.isUserInRole.
+-> javax.annotation.security.RunAs:
+     Can be used at type level.
+     Specifies the run-as role for the given components.
+Note: Method-level annotation overrides the behavior of class level annotation.
+
+-> Description: as we know that JAX-RS 2.0 has filters for pre and post request handling, so we will be using ContainerRequestFilter interface. In this filter, 
+   we will get details of the method which request is trying to access. We will find-out all security related configuration on that method, and verify 
+   everything here in this filter.
+-> steps to be followed to secure the REST Api on Role based:
+Step 1. Create a Resource:
+		@Path("/employees")
+		public class JerseyService
+		{
+			@RolesAllowed("ADMIN")                          // only accessed by the user whose role is admin {get user role info from DB}
+			@GET
+			@Produces(MediaType.APPLICATION_JSON)
+			@Consumes(MediaType.APPLICATION_JSON)
+			public Employees getAllEmployees()
+			{
+				Employees list = new Employees();
+				list.setEmployeeList(new ArrayList<Employee>());
+				 
+				list.getEmployeeList().add(new Employee(1, "Lokesh Gupta"));
+				list.getEmployeeList().add(new Employee(2, "Alex Kolenchiskey"));
+				list.getEmployeeList().add(new Employee(3, "David Kameron"));
+				 
+				return list;
+			}
+		}
+Step 2. Create a Web.xml
+		<web-app>
+			<display-name>Archetype Created Web Application</display-name>
+			<servlet>
+				<servlet-name>jersey-serlvet</servlet-name>
+				<servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+				<init-param>
+					<param-name>javax.ws.rs.Application</param-name>
+					<param-value>com.howtodoinjava.jersey.CustomApplication</param-value>                      <-- thing need to be Noticed
+				</init-param>
+				<load-on-startup>1</load-on-startup>
+			</servlet>
+			<servlet-mapping>
+				<servlet-name>jersey-serlvet</servlet-name>
+				<url-pattern>/rest/*</url-pattern>
+			</servlet-mapping>
+		</web-app>
+Step 3. create AuthenticationFilter.java file with all the logic of checking on the resource method getting access for each request and then bind this filter to the
+        CustomApplication.java file as in step 4.
+		@Provider
+		public class AuthenticationFilter implements javax.ws.rs.container.ContainerRequestFilter
+		{
+			@Context
+			private ResourceInfo resourceInfo;
+			@Override
+			public void filter(ContainerRequestContext requestContext)
+			{
+			     Method method = resourceInfo.getResourceMethod();
+					//Access allowed for all
+					if( ! method.isAnnotationPresent(PermitAll.class))
+					{
+						//Access denied for all
+						if(method.isAnnotationPresent(DenyAll.class))
+						{
+							requestContext.abortWith(ACCESS_FORBIDDEN);
+							return;
+						}
+						
+						// fetch the user info from the DB
+						// check the basic authentication logic...
+						// if not authenticated user response.. user is not valid
+						// if seecess then see what annotation is present on the accessing method(i.e. is it role based access if so)
+						// check the role of the user and match with the method 
+						// if not authorized then response to the client... access denied or not authorized to access requested resource like below:
+						//Verify user access
+							if(method.isAnnotationPresent(RolesAllowed.class))
+							{
+								RolesAllowed rolesAnnotation = method.getAnnotation(RolesAllowed.class);
+								Set<String> rolesSet = new HashSet<String>(Arrays.asList(rolesAnnotation.value()));
+								  
+								//Is user valid?
+								if( ! isUserAllowed(username, password, rolesSet))
+								{
+									requestContext.abortWith(ACCESS_DENIED);
+									return;
+								}
+							}
+						
+		            }
+					
+		    }
+		}
+Note: for the error(like not authorized or authenticated).. we are aborting the excution at that point with sending response to the client. else it will
+automatically move to the requested resource.
+
+Step 4: Register AuthenticationFilter with ResourceConfig.
+        Ex:
+		 public class CustomApplication extends ResourceConfig
+		{
+			public CustomApplication()
+			{
+				packages("com.howtodoinjava.jersey");       // package name which need to be access by jersey(here where resource is defined)
+				//register(LoggingFilter.class);
+				//register(GsonMessageBodyHandler.class);
+				//Register Auth Filter here
+				register(AuthenticationFilter.class);     // resgistering cutom filter which need to be excuted for each request
+			}
+		}

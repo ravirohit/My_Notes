@@ -1,0 +1,44 @@
+
+============================================ Note ==============================================
+-> Conoversion for Local time to UTC time:
+	   function getUTCTimeFormatFromLocal(d){
+			//let d is DateTime in local timeZone
+			utcTime = new Date();
+			utc.setTime(d.getTime() + d.getTimeZoneOffset()*60000)
+			return utcTime;
+		}
+-> conversion of UTC time to Local time:
+		function getLocatTimeFromUTC(d){
+		//let d is DateTime in UTC timeZone
+		  localTime = new Date();
+		  localTime.setTime(d.getTime() - (d.getTimeZoneOffset()*60000))
+		  return localTime;
+		}
+
+Q) define function?
+Ans:
+A function is a process which takes some input, called arguments, and produces some output called a return value. Functions may serve the following purposes:
+-> Mapping
+-> Procedures
+-> I/O
+Q) what is meaning of pure function in javascript in terms of reducer of react?
+Ans: A pure function is a function which:
+-> Given the same input, will always return the same output.
+-> Produces no side effects.
+
+Q) How to perform deep copy in javaScript?
+Ans:  we can use the concept of JSON.stringify() and JSON.parse() to perform deep copy of the complex datastructure.
+
+Q) In Javascript, what does this underscore mean?
+Ans: You should add that the underscore is just a convention for indicating private things. It doesn't actually affect the accessibility of a variable.
+
+Q) how to use parent this reference in javascript?
+
+Q) Why do we use one function inside the another function in javasript? also what is the concept.
+
+Q) explain about call(), apply(), and bind() in javascript.
+Ans:
+
+Q) what is difference between window.load() and documents.ready()? and can we use it multiple times in the application?
+Q) what is difference between arrow function and normal function in ES6?
+

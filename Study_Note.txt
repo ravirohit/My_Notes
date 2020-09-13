@@ -1,0 +1,10 @@
+--> fix of forbidden response(403) at broswer level:
+chrome short cut ->right click -> properties -> in target append the following line:
+--disable-web-security --user-data-dir="Note"
+Note: chrome://version -> put profile path in the above use data dir
+
+
+--> angular command
+npm uninstall -g angular-cli
+npm cache clean
+npm install -g angular-cli@latest

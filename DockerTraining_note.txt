@@ -1,0 +1,779 @@
+
+-> ping web-proxy.in.hpecorp.net
+   set proxy in linux:
+   #export http_proxy=http://web-proxy.in.hpecorp.net:8080
+   
+-> download virtualbox > 6.0
+-> VIRTUALIZATION enabled in BIOS
+   HYPER-V disabled in windows
+-> download MATSYA-2.0.ova   // it is a linux alpine system with docker engine installed.
+-> user1/Pass@word1
+-> Playwithdocker website
+------------
+raj@rajware.net
+chitra@rajware.net
+
+--------------- Important application =--------------
+->  used as pid =1 and refer to other appliation.
+-> tini
+------------------------ Containerization with Docker -------------------------------
+-> different kernel require different image for the same application.
+-> if we are pulling image from linux host then it download container image which is compatiable 
+   with linux machine and same goes with windows host.
+-> alias name scope is on network level.
+-> container is an application which run in a isolated environment. 
+-> each instance does have their own file system. 
+-> here it uses concept of virtualization: 
+-> each instance act as independent but single kernal take care of all instance of VM. 
+  - Each VM is nothing but act as application to the single common Kernel.
+-> we can define multiple NI(software) for single NIC(hardware).
+-> CH-root/ cgroups
+-> why linux was keep in the consideration to implement this concept. introduces feature in Linux:
+   - CGroups: one CGroups one set of namespaces.  // instead JOBObject available in Windows
+   - NAMESPACES: process in namespace can only see processes in that namespace only not outside.
+   - LxC: library added to Linux operation system. to create CGroups. it provide container runtime.
+   
+-> dot-cloud -> Docker: it is a tookit which provide :
+    - packaging 
+	- container to provide runtime environment
+	- created a new "libcontrainer" = LxC + new feature by Docker
+	- created again a new library on top of libcontrainer which is "runc". 
+	- runc can't download/upload or read/run the container image images. 
+	- so Docker created "containerd" which solve the limitation of runc.
+	- mobi project. create separate tool need in the docker which finally package together.
+-> what is contrainerization and how docker acheive it.	
+- container: it is an isolated application instance. where we can run our application.
+- multiple OS can have same kernel.
+-> Docker contribution for containerization:
+  - The Docker/oci image format
+  - The Docker registry protocol.
+  - The Docker Engine // it is not a container but it creates, monitor the container.
+  OS kernel -> Docker Engine -> then container instance
+ NOTE: there are some toolkit where Docker Engine might not requirsed: Podman by Redhat
+  - docker provide Docker engine Cli which make REST api call to Engine level.
+???? docker CLI and Engine can be on separate machine.                                         VVI.
+-> Docker Host: host on which Docker engine is running.
+-> Docker for Redhat is not available but for res OS . you can get it.
+   - for apple mac, docker engine is not available. but when you install docker desktop for mac. it install linux internally on the top of which docker engine run.
+-> Windows container can run on Windows kernel and same for linux.
+-> OCI standard, you can't create container without images. 
+   - image is package from which we can create any number of container.
+   - it contains metadata(which primary process to start if we start container, CGROUP, NAMESPACES) and  
+     data(file system of that container/ single file). 
+   - file system is union of all the layers.
+   - Image is made up of layers:
+   
+   
+     --------------------------------------- below are image layer and image is B01   
+      sha: hex value -------------------      layer is identified by globally uniquie number 
+			            /etc/conf1
+	  sha: hex value ---------------------    layer is identified by globally uniquie number 
+	                    /bin/appi
+						
+  -> every time you create a container from image, new layer get added which is storage layer.
+     
+-> Golden rule of docker:   
+    - images are immutables. if you want to do any modification and then create 
+       images it will create new images file.
+	- Container are disposable. can be deleted any point of time.
+	- image name has four parts:
+	  - [<registry>]/[<username>]/<repository>/[:<tag>]
+	  Example: #docker image tag myalpine:1.0 rohitravi/myalpine:1.0
+	  if don't provide registry name docker engine will assume "docker.io"
+	  username<DockerID>: if not provided then take library.
+	  repository specify what application is there. it is not optional. kind of my image name.
+	  tag is for to define version of the software but could be for other purpose.
+-> Container file system dynamically created from the image when we start the container.
+-> any contrainer started, it create a new layer specific(container storage layer) to that container. 
+   and any changes on that container will be given in that new layer. 
+-> image will not be deleted only if there is no any container running corresponding to that image.
+
+-> if you are root user or members of docker group then you can have all permission.
+-> layer for metadata and data created separately. 
+-> Docker CLI pattern:
+  -> option - (single letter option), --(option is multiple letter)
+  -> all option must come before parameter.  
+   #ps aux
+   #docker <pattern> <command>
+   #docker image ls
+   #docker image inspect nginx:alpine  // show the metadata of image. // also we can see data layers. but not meta data layers:
+   - containerconfig is not importent but config section is important.
+   #docker image history alpine   // it shows layer info of metadata of image and then data.
+     // metadata layer size always is 0 and data layer size is non-zero.
+   #docker system df 
+   #docker system info
+   #docker image
+   #docker container create --help
+   #docker container create <image_name>  // from which container will get create
+     - if we dont give the container name, docker will keep some name
+   #docker container ls   // show all the docker which is running 
+   #docker container -a   // show all container created as well as running 
+   #docker container inspect <container name or id>
+   #ps aux | grep nginx
+   #docker container start 1bc091361f41
+   #docker container inspect 1bc091361f41
+   #ps aux | grep nginx
+   #docker container top 1bc091361f41  // process which is running part of this container.
+-> pid = 1
+   - what is life of container 
+   - capture logging by docker for the container. 
+   - 
+-------- different container creation
+   - container name contain smaller case letter and digit and few special character
+   - for production never keep standard input/output open. option to keep it open -i
+   - container to attache sudo terminal to it: -t
+   - first process of any container will always have id 1.
+   pid of c1: 5585
+   #docker container create --name=c1 -it alpine 
+   #docker container start c1
+   #docker container top c1
+   #docker container attach c1  // attch this terminal with the first process of container 
+     // it attach our terminal to process 1 of the container.
+   #ps aux
+   -> to detach back: ctrl + p and ctrl +q
+   #docker container top c1
+   #docker container attach c1   // work with interactive container only
+   #exit // it will exit from the container terminal which process id is 1. and we will also exit from 
+          container and container will stop as well as process with id =1 exited.
+    -> lifetime of the pid =1 is the lifetime of the container.
+   #docker container logs c1
+  // docker capture log all the command run on the container c1 on the process with id=1;
+   #docker system info   // can get the logging driver info 
+   #docker container rename <name> <new_name>    //rename the container
+   #docker container exec -it c0 /bin/sh
+    // it start a new process in the already running container and attache to it.
+   #docker run: // it create start and attach to the container... but don't use this 
+   #docker container create --name=abc /bin/sh    // will add cmd attribute of config under inspect command
+   #docker container diff c1  // show changes happends in storage layer.
+   #docker container diff c0
+   #docker container df
+   #docker container cp /tmp/name.txt c4:name.txt
+   - we can copy from docker host to container and vice versa.
+   - we can't copy from container to container 
+-------- restart policy while creating container 
+--restart=no/always/on-failure/unless-stopped 
+  - complete if pid exit code is 0...or crashes   
+  always: means whenevery we are stopping, on docker host restart, container again started.  
+  unless-stopped:means whenever we are stopping, on docker host restart, container not again started.  
+  
+-------- 
+    #docker container export             // export the entire container as tar file.
+	#docker container start -ia c4
+-> .ash_history: this file contains all the command info run on the container.
+    #docker container rm c0 c1 c4
+	#docker container rm -f c0 c1 c4
+--------- store data in container permanently Mount-----
+create volumen: faaf8850f042fdbcbdad32e9f6dc4e9238d5d2cb839eb0af151e82cd86ffbcc4
+-> mount external storage to container and store the file it will be permanent.
+-> we make this decision at the time of creating container.
+-> Docker has three categories:
+    1. Volume Mount     // commonly use
+	2. Bind Mount
+	3. tmpfs Mount
+-> Volume is unit of external storage which is managed by Docker Engine.
+    -v /vols/vol1   or --mount type=volume,target=vols/vol1
+	-v faaf8850f042fdbcbdad32e9f6dc4e9238d5d2cb839eb0af151e82cd86ffbcc4:/data   or --mount type=volume,target=/data,source=faaf8850f042fdbcbdad32e9f6dc4e9238d5d2cb839eb0af151e82cd86ffbcc4
+	
+	#docker volume create my-vol
+    #docker volume ls
+	#docker container create -it --name=v1 --mount type=volume,target=vols/vol1
+	//targe is mount point at container. path is at container
+	
+	#docker container create --name v2 -it --mount type=volume,target=/data,source=faaf8850f042fdbcbdad32e9f6dc4e9238d5d2cb839eb0af151e82cd86ffbcc4 --mount type=volume,target=/data2,source=newvol1 alpine:latest
+ -> if we provide source, if there is volume with same name, it will get used else it will create a new 
+    volume with same name and use it.
+  -> till now we are only deciding the mount point, it is pointing to which local/netowrk storage we are
+     not setting that. 
+  - docker comes with default driver which is local. 
+-> controlling the network storage as well:
+  - it can be achieved by driver. we have to install driver. and use it with option:
+   #--volume=driver and provide other option.
+-> what is difference between anonymous volume and named volume.
+  -> anonymous volume(without /source): always create a new volume.
+                - anonymous volume can be deleted while deleting the container only if this is no longer
+				  is being referenced by other container. Same is not applicable with named volume.
+  -> named volume(with /source): check if there is volume with same name or not if there is, it will use 
+                  existing once else will create a new volume.
+			   - we have to always delete the named volume explicity. can't delete at the time of deleting
+			     container like anonymous volume.
+-> What if two volume it mapped to same mount point: mount point will use the later volume which is 
+                 provided.
+-> volume is empty and mount path already exist:
+             - at the time of mounting, docker engine copy the file from mount point/docker to volume.
+			   and then mounted.
+-> volume is not empty: then copy operation from container to docker host will not happens.
+             - already existing file in the mount point will become shadow. after mounting only file in 
+			   source volume will be visible. mount point contents will be shadow. 
+-------------- Bind mount -------------
+-> it is kind of sharing data in between host and container.
+-> mounting the path on the host to the container. 
+-> Bind mount is definely at local host.
+-> which one is bettter bind mount/ volume mount.
+-> path can be deleted even it is pointed by container.
+   // -v /home/user1/bind1=binddata1    OR
+      --mount type=bind,target=/binddata1,source=/home/user1/bind1
+  #docker container create --name b1 -it --mount type=bind,target=/binddata1,source=/home/user1/bind1 alpine
+   
+------------------- tmpfs mount ------------------
+-> it is temporary data store in the mountpoint.
+-> it is container level only. store data in memory. whenever we restart the container we lose the 
+   complete data store in the mountpoint.
+-> only available for linux not for windows.
+  --mount type=tmpfs,target=/some/tmp/dir
+  #docker container create --name t1 -it --mount type=tmpfs,target=/some/tmp/dir
+--------------
+  #docker container create --name clonec1 -it --volumes-from c1 alpine:latest 
+ NOTE: it will create a container clonec1. which has all volumes which mounted on existing container c1.
+ 
+----------------------- Container networking ----------------
+-> delete all docker available:
+         #docker container rm -F $(docker container ls -a -q)  // return all the container id. 
+-> three type of communication:
+	1. container to container communtion
+	2. container to outside world
+	3. outside world to container 
+-> docker handle this operation using Network object just like, image, volume and container object. 
+-> there are different kind of driver as per need. 
+-> what responsible in network of docker:
+   -> communication
+   -> ip management. 
+-> there are three network available by default in docker:
+   1. bridge  // always created this network by default for container
+   2. host
+   3. none
+-> first ip address of the netowk in the docker reserved for docker host itself.
+------------- bridge network ---------
+-> bridge driver assign the ip address for the container. 
+-> every time we start a container whose driver is bridge, a new network interface is created. means
+   on each restart, there is changes ip of the container will changes. 
+-> default bridge network doesn't resolve names.
+   any other bridge nework (created manually) will resolve the names. 
+-> solution to resolve to name to ip by bridge are two ways:
+   1. old style:
+      #docker container create --name n4 -it --link n2:webserver alpine
+	  - it means, container can communicate with n2 container with name whatever ip of n2 is changing,
+	    it will not create issue. dynamically it will be update at n4.
+	  - n2:webserver : webserver is optional. if we are providing webserver, means we have providing 
+	                   this as alias of n2 container.
+       -> background working: 
+	     docker engine, keep one dind map for file /etc/hosts of n4 container outside of n4. 
+	      which keep udpated whenever we restart n2 and ip got changes. 
+		- can be cross verified by typing "mount" in n4 container. 
+      -> disadvantage: 
+	        - about n2, only link will be avialble to n4. not to other container in network.
+			- if n2 and n4 in stop state. we can't start n4 if n2 is stopped with below error:
+	    matsya:~$ docker container start n4
+		Error response from daemon: Cannot link to a non running container: /n2 AS /n4/webserver
+		Error: failed to start containers: n4
+   2. - create your own network:
+        #docker network create --driver bridge --subnet 192.168.100.0/24 pnet1
+		#docker container create --name pn1 -it --network=pnet1 alpine
+		#docker container create --name pn2 --network=pnet1 --network-alias webserver1 nginx:alpine
+		#docker container create --name pn3 -it --network=pnet1 alpine
+
+-> alternet for curl:
+   #wget -O- http://172.17.0.3     // alternate for curl command
+   
+   
+----- changing network of container :
+   - assume n1 is in network "bridge" and now try to move it to different network pnet1.
+        #docker network connect pnet1 n1   
+  // adding container n1 to differnt container pent1
+  // now n1 container is part of both network "bridge" and pnet1 network. 
+    can communicate with any system of network pnet1 and bridge network if it was communicating earlier. 
+-> /etc/resolv.conf file of docker host is bind mount to all the container machine.
+  - all the container in default or manually created bridge network, for them docker host work as 
+    net router to communicate with outside world.
+-> we can set the proxy per container basis. 
+    #export http_proxy=http://web-proxy.in.hpecorp.net:8080
+	
+------------   Port publishing ------------
+-> opposite of net call port net or port forwarding concept is there to publish the port on which 
+   outside world will make a request to the docker host and docker host will map the request to the
+   container.
+-> outside world to container access.
+   #docker container create --name pp1 --publish 8000:80 nginx:alpine
+    8000: host port.
+	80: container port
+	   OR
+   #docker container create --name pp1 --publish <Host_IP_addres>:8000:80 nginx:alpine
+-> test: #curl http://127.0.0.1:8000
+-> same host_port can not be used by two container. and if mapped only one container should be up.
+---------- How to hit linux running on virutal box linux from windowd destop:
+-> enable a port forwarding in the virtual box.
+  -> right click on vbox -> setting -> network -> attached to (NAT) -> click "Advanced" -> "port forwarding" -> map the host port(desktop) with guest port(vbox)
+-> now when we hit the same port from desktop, will be forwared to the vbox running on the virtual machine.
+-----------------------------------
+-> How to create a container with no network:
+   #docker container create --name c1 --network none
+-> what happens if we create container in host network.
+   - we should never use container in hostname.
+   - usecase situation:
+     - NAT: it cause network latency. to avoid it we create container in host network.
+	       Like: Stock application, realtime video streaming.
+     - ETHERNET level communcation: then we keep container in host network.
+	 
+	 
+	 
+====================== Image creation and running contrainer from it ======================
+-> to enable the internet from vbox virtual machine. 
+   - set the proxyin /etc/profile.d/proxy.sh 
+   - any file in folder /etc/profile.d/* executed whenever we login to vbox.
+-> stop the docker engine:
+   #sudo service docker stop
+-> whatever environment variable is set in the docker host. 
+   - before setting the configure the docker daemon, we have to stop it. 
+   #sudo vi /etc/init.d/docker
+   edit:
+     start_stop_daemon_args="--background \
+        --stderr \"${DOCKER_ERRFILE}\" --stdout \"${DOCKER_OUTFILE}\" --env http_proxy=http://web-proxy.in.hpecorp.net:8080"
+   #sudo service docker start
+   #docker search alpine    // search the alpine image from docker hub.
+-> whenever we are working with new image, we have to find below four piece of information to start:
+  command: what command to create container
+  storage: where permanent data will store.. like volume mount
+  connectivity: find port number..check if only need to access from another container or from outside. 
+  configuration: most common method to provide configuration is using environment variable. 
+----------- image download -------------------------------
+  #docker image pull mysql:5.7              // it will download image layer by layer.
+  #docker container create --name db1 --mount type=volume,target=/var/lib/mysql,source=db1vol --env MYSQL_ROOT_PASSWORD=password --network pnet1 mysql:5.7 
+  #docker container logs db1
+--- mysql db client/Adminer ------
+
+  #docker container create --name fe1 --network pnet1 --publish 9001:8080 --env ADMINER_DEFAULT_SERVER=db1 adminer
+   - in chrome: http://localhost:9001
+  -> provide usename: root/password
+  -> if db1 name is not resolving. then it might be possible db1 container is not up or it is in
+    differrent network. 
+  -> change db1 network to same network:
+     #docker network connect pnet1 db1
+ -> mysql application doesn't run on alpine user-land. even if we are using alpine linux, but we 
+    are running mysql with the help of container..
+
+-------------------------------------------------------------------------------
+-> Manifest file:
+-> orchestrator: it is tool to manage application on multiple docker host. 
+-> Docker compose: it allows us to manage application on single docker host.	
+              - it create manifest file in yml format. 
+			  - yml is combination of key and value separed by colon followd by space then value.
+			    data type of value is dyanamically bind as per apperances.
+			    Example: 
+				    key: value      // keep single value
+					key:            // keep list as value to key
+					  - value1
+					  - value2
+					  - value3
+					  - value4:    // element of list is map object
+					    subkey: value1
+					key:           // map object assign to key
+					  subkey1: value1
+					  subkey2: value2
+					  subkey3:
+					    subsubkey1: value1
+					  subkey:
+					    - value1
+						- value2
+ - version key is must in compose manifest file which is version of schema not the tool.
+ 
+------------------- pattern to use docker compose tool ------------------
+ #docker-compose [-f <manifest_file>]   // if manifest file name is docker-compose.yml if name is other than that then we have to provide the file name
+        #docker-compose [-f <manifest_file>] <command> [arguments]
+ Example:
+   #docker-compose -f stack.yaml config    // check the yaml file syntaxtically if it is right. 
+   // always keep -d while running "docker-compose up" command.
+   #docker-compose -f stack.yaml up -d     // create the all docker instance based on manifest file.
+               OR
+   #docker-compose -f stack.yaml -p project_name  up -d
+   // -p <prefix_for_docker_instance>  it is optional
+   // if not provided it take the folder name as prefix from where docker compose command executed.
+   #docker-compose -f stack.yaml -p dbapp2 ps
+     // show the container created. 
+   #docker-compose -f stack.yaml -p dbapp2 logs
+   #docker-compose -f stack.yaml logs fe
+   #docker-compose -f stack.yaml exec fe /bin/sh
+   #docker-compose -f stack.yaml down  
+   // it will down the all the container and clean everything except volume. 
+   if we want to clear volume also we have to provide it in command as:
+   #docker-compose -f stack.yaml -p dbapp2 down --volumes
+   #docker-compose -f stack.yaml -p dbapp2 up/down --remove-orphans
+-> Labels: for every object in the docker there is arbitrary labels added to it. it is not used by 
+    docker but used by tool which is managing it like docker-compose. 
+  - like which docker object has been created by which manifest file.
+-> what is important of -d in docker-compose file.
+  Ans: it start/up the application and prompt comes out. 
+     - if not provided, prompt will not comes out if we will try come out then all container instance will stopped and comes out.
+	 - so it's always important to use -d with up command. 
+-> why docker-compose is needed?
+  - when we have to mangae application container using stack or manifest file. this some tool 
+    come into the picture. docker-compose is one of them. 
+	
+=========================== create our own image =====================
+-> important of pid 1 application:
+   1. define the running of container
+   2. logs for application running on pid is captured by engine.
+   3. gracefull shoutdown of this process.
+-> plan to create a image:
+  1. Identify your pid 1 command/cmd
+  2. list all dependecies of pid 1
+  3. Divide (2) into :
+     3.1: things provided by you
+	 3.2: Things not provided by you.
+  4. based on (3b), select a good base image.
+  5. Gather everything in 3a in a directory.
+-> type of creating image:
+  1. customizing a existing image.
+  2. create our own fresh image.
+---------------------
+1. customize a existing image:
+  gathered the avobe five info:
+  1. /bin/sh
+  2. alpine userland, vim, curl, os-release
+  3. 
+    3.1: os-release file
+	3.2: vim, curl, alpine user-land
+  4. alpine
+  5. /alpine
+-> alpine has apk tool like rpm in redhat machine.
+-> create container -t bc1
+   -> login to container shell
+    #set proxy in the container.
+    #apk update
+    #apk add curl
+    #apk add vim
+	#docker container cp os-release bc1:/etc/os-release
+	#docker container diff bc1
+	#docker container commit bc1 myalpine:1.0      // it create a image of container bc1 with name myalipine 
+	#docker image history myalpine:1.0
+	#docker image tag myalpine:1.0 myalpine:latest  
+	 // same image file with two tag... means one image with multiple tag.
+	 // if we remove image with tag, only that tag name will be removed and when there is no more extra 
+	   tag 
+	#docker container create --name test1 -it myalpine
+	
+-> right approach to create a image:
+  - Dockerfile: file which containes the steps to create a image file. it is used by docker engine.
+       - the name of the docker file traditionally is "Dockerfile"
+	   -> we can provide the mount point in the docker file but can't provide volume name.
+	   - we have to provide volume name while creating container from image.
+  - builContextdirectory: is a directory where Dockerfile and all other files need for the build new image 
+         must be there.
+	   - source directory (COPY) should be always relative to the builContextdirectory
+	   - when we run the build, docker CLI copy builContextdirectory folder to docker engine whereever it is
+	     and docker engine do the processing to create a new image. 
+	   - every instruction in the dockerfile will create a new layer. it could be either data layer or metadata
+	     layer.
+ -------
+  #cd myalpine
+  #touch Dockerfile.1.1
+   // docker file can have empty line, comment line(#), or instrunction 
+   // each instrunction will be in new line and should be in capital letter.
+  #docker image build -f Dockerfile.1.1 -t myalpine:1.1 .                   // buid an image
+   // above command to create a new image from dockerfile
+   // mandatory parameter is path of the builContextdirectory .. here path is current directory "."
+  #docker image ls
+  #docker image ls -a
+  #docker image history myalpine:1.1
+- docker engine can remove dangline image if it is running out of space. 
+  
+  #docker image rm 7b549fc2cc53   // to delte none dangling image 
+Q) is it must image will have cmd value?
+Ans: not mandatory. if image is not having cmd value, container for that image will not be created. it will throw
+   error.
+   - this image will act as base image to create other image.
+
+===================== create an image of application ===========
+-> strech/slim/buster/nothing mentioned in the image name on docker hub means, it is davient image.
+  - anything else user-land image will have the name will be appended in the image name.. like alpine, windows etc.
+-> download fitnesse-standalone.jar 
+-> five steps to create application image:
+  1. java -jar fitnesse-standalone.jar
+  2. java, os userland, fitnesse-standalone.jar
+  3. 
+    3.1: fitnesse-standalone.jar
+	3.2: java, os userland
+  4. java base image
+     openjdk:8u232-jre-slim-buster
+  5. gether all file in one directory.
+-> #docker image build -t myfitnesse:1.0 .
+
+  #docker container create --name test5 --publish 9005:80 --mount type=volume,target=/app/FitNesseRoot,source=05d013cb6fac0d52eef9d9c7262b7f585e48a7a5ed3bba24c200831e0a68420c myfitnesse:1.0
+  
+--------
+-> docker read logs written on standard output or standard error output by pid 1 application of container. 
+  - what if our pid 1 application is writting log in file or what if log is written by process id other than 1.
+  
+-> How ENTRYPOINT and CMD of image works. together.
+   when we run the container then command will run as:
+     ENTRYPOINT + CMD to run pid application.
+  - normally ENTRYPOINT doesnt override but CMD can be overwritten while creating container from image. 
+-> difference between ADD and COPY in dockerfile.
+  - in ADD, source can be URL of the file even from internet.
+  - TAR can also be source. and docker engine will copy the tar file and at destination it will be untared by 
+    engine itself.
+========================= Multi stage build ================
+example: https://hub.docker.com/r/rajchaudhuri/voxel-dockerclient/dockerfile
+--------------
+-> How to exclude few files from contextbuilddirectory. 
+  - create .dockerignore file
+  - keep the files or folder name which need to be ignore from copied from docker cli machine to docker engine
+    machine.
+	
+====================== Documentation =====================
+-> link for docker documentation: https://docs.docker.com/
+  - see tabs "Guides" and "Reference"
+  - https://docs.docker.com/engine/reference/commandline/network_create/
+  - offline pull file: https://docs.docker.com/docsarchive/
+  
+----- publish image to docker.hub ---
+-> create account at docker.hub 
+   #docker image tag myalpine:1.0 rohitravi/myalpine:1.0     <rohitravi> <- it is dockerid 
+   #docker login <registry>                       // from docker engine login to our docker.hub account 
+   // by default registry is docker.io
+   #docker image push rohitravi/myalpine:1.0      // push the image to docker hum registory.
+   #docker logout
+
+------------------ manage User for container ---------------------------
+-> by default, all process on the container run as user root.
+   - unless process pid 1 run the other process with other user.
+   - so by default process with pid 1 run with user root but same not must for other process.
+-> where the user info store in linux: username and it's id.
+   #cat /etc/passwd
+   #docker container create --name u1 --user user1 -it alpine
+---- example:
+   #docker container create --name u1 --user user1 -it alpine
+   #docker container start u1   // not stared with below error.
+     Error response from daemon: unable to find user user1: no matching entries in passwd file
+   #docker container create --name u2 --user 1002 -it alpine
+	92ac5b869a58423eafa4947e63cdb8e9f38f947ac2ce9d5b3573478ead6a7209
+   #docker container start u2   // started 
+    u2
+   #docket container attach u2
+    /$echo "ravi" > abc.txt      // will get permission denied error.
+   
+   #docker container create --name u3 --user 1000 -it --mount type=bind,target=/data,source=/home/user1/bind1 alpine
+   #docker container start u3
+   #docker cotainer attach u3
+    /$ echo "ravi" > abc.txt     // permission denied
+	/$ cd /data
+	/$ echo "abc" > abc.txt     // will be created. 
+	
+	#docker container create --name bc1 -it alpine
+	#docker container start bc1
+	#docker container attach bc1
+	 #adduser ca
+	 #mkdir /appdata
+	 #chown ca:root /appdata
+	#docker container commit bc1 myuser:1.0
+----------------- above modifed running container will be used below to create the image ------
+matsya:~$ docker container commit bc1 myuser:1.0
+sha256:8629c43237cba6b1126cf5dd918521dfe3c7d5568bb6d772fc6a283a54c46dcd
+matsya:~$ docker container stop bc1
+bc1
+matsya:~$ docker container rm bc1
+bc1
+matsya:~$ docker container create --name u5 -it --user ca --mount type=bind,target=/data,source=/home/user1/bind1  myuser:1.0
+bf648802c3166adc1f3fb5408b8b59e60a4a2fa76a8fe2785d04ac74e1feb1e2
+matsya:~$ docker container start u5    // will start the container as user ca
+u5
+matsya:~$ docker container attach u5
+/ $ whoami
+ca
+/ $ pwd
+/
+/ $ echo "rrr" > name.txt           // we dont' have permission in the pwd.
+/bin/sh: can't create name.txt: Permission denied
+/ $ ls
+appdata  bin      data     dev      etc      home     lib      media    mnt      opt      proc     root     run      sbin     srv      sys      tmp      usr      var
+/ $ cd appdata/
+/appdata $ touch "aa" > abc.txt   // we have given access to pwd for user "ca" so worked. 
+/appdata $ ls
+aa       abc.txt
+/appdata $ ls -l
+total 0
+-rw-r--r--    1 ca       ca               0 Jan  9 09:21 aa
+-rw-r--r--    1 ca       ca               0 Jan  9 09:21 abc.txt
+matsya:~/bind1$ ls -l
+total 4
+-rw-r--r--    1 user1    user1            0 Jan  9 14:34 abc.txt
+-rw-r--r--    1 user1    user1            6 Jan  9 14:52 name.txt
+matsya:~/bind1$ docker container top u5
+PID                 USER                TIME                COMMAND
+12108               user1               0:00                /bin/sh
+---------------------------------------------------------------------------------------
+-> inventory and manifest/stack file needed to handle thousands of application/container.
+-> Orchestration Software: to manage which application need to be installed where in container.
+    - it schedule
+	- deployment
+	- monitoring: monitor all the container what is their current state and what is desire state.
+	            accordingly it take the decision.
+	- healing: container crashes then bring up same or create/start another for same application.
+    - scaling: scaling up and 
+	- Auditing:
+-> example of Orchestration software available:
+    - mesos orchestration         // used for container or for other application as well.
+	- decos orchestration  commercial version of mesos.
+	- CNCF : cloud native computing foundation
+	  borg orchestration by google -> make it open source and owner is CNCF -> later known as
+	  kubernate orchestration        // used only for container.
+	- katle orchestration
+	- swarm orchestration by docker. but not success.
+	- docker swarm mode : it comes with docker engines integrated. quite better.
+	                - easy to use. and fast for medium level infrastucture.
+					- intalling docker enterprise edition: both kubernate and docker swarm orchestration
+					  comes together can use either one.
+					- best tool for learning orchestration.
+-------------------- How any orchestration work -------------------------
+-> what all you need 
+ - get the cluster and node information.
+ - create inventory which continuous changes. node itself pulish it's inventory info to one centralized 
+   machine.
+-> Please find the png file in the same directory of this file.
+====================== Docker swarm mode for orchestration ===========================
+-> inter host contrainer comminication : overlay networking software.
+-> each container should have overlay networking software should be installed.
+  -> overlay networking software communicate with api software to check if the destination container 
+    is in the same host node or in different host node. if it is on the same host, overlays networknig
+	will use bridge network communication as we have see earlier.
+  - if both container is in separate host. then overlays will communicate with destination container 
+    overlays network software using physical ip address.
+  - it is must in orchestration software. 
+  - we can also use this in non container infrastructure.
+======= "Play with docker" web site to learn about docker swarm orchestration ============
+backup: To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.
+-> for creating cluster steps:
+  - create a master node , intializing the swarm 
+    if master node is having multiple interface then put ip which need to be advertise
+       #docker swarm init --advertise-addr eth0
+  - To add a worker to this swarm, run the following command:
+       #docker swarm join --token SWMTKN-1-4znswp44i9nt4vdm7je11xexkpitb42xew8clq4bildyhz4dsq-1d2366e1t85m1r66qpo0k09e6 192.168.0.18:2377
+  - to get the worker token number:
+        #docker swarm join-token worker    // for knowledge purpose
+  - to get the manager token number:
+        #docker swarm join-token manager   // for knowledge purpose
+  - token is required when first time agent want to communicate with manager node
+  - Node Object: when docker host become part of cluster then new more object come to picture which is node:
+  - list to know all now node in the cluster:
+       #docker node ls
+  - create one more new instance for worker:
+    - add this new node as worker to the swarm
+       #docker swarm join --token SWMTKN-1-4znswp44i9nt4vdm7je11xexkpitb42xew8clq4bildyhz4dsq-1d2366e1t85m1r66qpo0k09e6 192.168.0.18:2377
+    - any operation which related to all other node in the cluster doesn't work.
+	   #docker node ls     // even this will not run on worker node.
+  - Service object: it represent the component of the application.
+                   - based on the definitation of the service object, container get created. 
+				   - agent create the container.  
+				   - -it is not allowed.
+    - command to create service: it has almost all option like container command.
+	   #docker service create --mode replicated
+     -- mode : define how many container will be created and where.
+	     - replicated mode means n number of same container can be created. n defined in replicas.
+		 - will try to create service on any node available.
+		  -- replicas option define number of container creatd. it is used when mode type is "replicated"
+	     - service without mode and replicate then default value is:
+            for mode: replicated
+            for replicas: 1	   
+	 -- mode: global 
+	     - only one container per node created. 
+  - example to create service on manager box:
+      #docker service create --name svc1 --mode replicated -d --replicas 1 nignx:alpine
+	    // wrong image name provided in above
+	  #docker service ps svc1    // see process status for this service.
+  - command to change service with right image name:
+     - mode can't be changes for service.
+      #docker service update -d --image nginx:alpine svc1
+	  // it will cause the agent to create a container on any one node 
+	  #docker service ps svc1
+	  #docker service ls
+	  // show on which node container has been created. 
+-> if we delete the container from that node, automatically agent will create the contianer on same 
+   or different node. 
+-> change replicas:
+      #docker service update -d --replicas 4 svc1
+	    // now 4 container will be created. 
+	  #docker service ps svc1
+--------------- global mode 
+      #docker service create --mode global --name svc2 -d nginx:alpine
+ -> below command to run on worker:
+      #docker swarm leave     // leave the worker node  
+-> what will happen if we leave on node from the cluster for replicated mode container and 
+   global mode container. 
+  - replica count container will be created on the node which is available.
+  - global container count will reduce by the number of node is leaving the cluster
+-> what happens to global mode and replicated container if we add one mode to the cluster. 
+  - global container count will increase by number then number of node added. 
+  - replicated mode container will be running on the same node where it was running ealier than new node.
+    - if we want to distribute this replicated container to this new added node also .. 
+	  then have to run rescheduler, like reduce the replicas number to 0 then bring this number to 
+	  what we needed. 
+   #docker service --replicas 0 svc1
+   #docker service scale svc1=6    // interanlly it call to update api only.
+   #docker service ps svc1
+   #docker service update --replicas 1 svc1
+   // if we dont' provide -d then we will see the progress bar for the command.
+   #docker service rm svc1 svc2
+-> if we remove the node from cluster and again add it. then node name will be same but different 
+   id. so literlly there is two node which cause ambiguity if we refer with node name.
+   so delete the node which is down to avoid it.
+   #docker node rm f1cub7x15ambldg8exi02jta3    // id is of node which is down.
+---------------
+   #docker service create -d --publish 9000:8080 --name svc3 chitradoc/ics
+   // service can't be renamed;
+   // it map the container port 8080 to each node 9000 port irrespective the the node on which container is running.
+     #curl http://localhost:9000 will work on all node in the cluster.
+   #docker service scale svc3=3
+   // in this case, multiple container run on multiple node. 
+   if we hit #curl http://localhost:9000 .. it can hit on any of the container on any node.
+    .. kind of load balancing concept work here.
+-> default overlays network for service create command is: ingress.
+   #docker network ls 
+---------------------------------------------------
+   
+   
+   
+   
+-> constraints: rule which we can add to the service.
+     - scheduler has to follow these rules.
+	 - constraints rule are like as node attribute as.
+	 - example: (can use "==" or "!=")
+	   #node.id==1A3BC      // constraints for the node whose id is 1A3BC
+	   #node.hostname==node2  // constraints for the node whose hostname is node2
+	   #node.role==worker     // rule appication only for worker node.
+	   #node.role==manager    // applicable for manager node.
+	   #node.labels.hpe.com.sunsine==pisces // node whose label is hpe.com.sunsine and value pisces
+	   
+-------- front end and backend
+   #docker network create --driver overlay pnet1
+   #docker service create -d --name db1 --network pnet1 --mount type=volume,target=/var/lib/mysql,source=db1vol --env MYSQL_ROOT_PASSWORD=password --constraint node.labels.hpe.noderole==database mysql:5.7
+   NOTE: all option to update: --<option>-rm/add   // will add or remove that option.
+   #docker service ls
+   #docker node update --label-add hpe.noderole=database node3
+   #docker service ls
+   #docker service logs db1
+   // this is the only communication from api to agent. 
+   #docker service create -d --name fe1 --network pnet1 --publish 9001:8080 --env ADMINER_DEFAULT_SERVER=db1 adminer
+   #docker service ps fe1
+   #docker service ls
+------ using manifest file
+ -> use the same manifest file what created for docker compose for swarm orchestration on the manager
+    node:
+   -> check the syntax:
+    #docker-compose -f dbapp1.yaml config   // it will check the syntax but not deploy
+-> stack object created for manifest file which create service object and all.
+-> service object create container on node.
+    #docker stack deploy -c dbapp1.yaml stack1
+	#docker stack ls
+	#docker stack services stack1
+	#docker stack ps stack1
+ -> if we remove stack object, all thing will be removed configured using that stack object.
+		 
+		 
+		 
+     
+
+
+
+
+
+
+	
+   

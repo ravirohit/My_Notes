@@ -1,0 +1,164 @@
+Form validation:
+    Input fields have the following states:
+
+		$untouched The field has not been touched yet
+		$touched The field has been touched
+		$pristine The field has not been modified yet
+		$dirty The field has been modified
+		$invalid The field content is not valid
+		$valid The field content is valid
+		They are all properties of the input field, and are either true or false.
+
+    Forms have the following states:
+
+		$pristine No fields have been modified yet
+		$dirty One or more have been modified
+		$invalid The form content is not valid
+		$valid The form content is valid
+		$submitted The form is submitted
+Note: They are all properties of the form, and are either true or false
+############################################################################################
+ng-class
+ng-switch
+ng-if
+ng-show/ng-hide
+$parent/$scope/$rootscope
+$rootScope.$emit('handlePublish') (up)
+$rootScope.$broadcast('handlePublish') (down)
+$scope.$on('handlePublish', function() {
+	$scope.sharedmessage  = sharedService.sharedmessage ;
+});
+explain about the following directives: ng-class="myVar"
+-> ng-class: The ng-class directive dynamically binds one or more CSS classes to an HTML element.
+-> The value of the ng-class directive can be a string, an object, or an array.
+-> The value of the ng-class directive can be a string, an object, or an array.
+--> If it is a string, it should contain one or more, space-separated class names.
+--> As an object, it should contain key-value pairs, where the key is the class name of the class you want to add, and the value is a boolean value. 
+The class will only be added if the value is set to true.
+
+-> ng-switch="myVar" and ng-switch-when="val" :- 
+-> The ng-switch directive lets you hide/show HTML elements depending on an expression.
+-> <element ng-switch-default></element>
+ng-model="myVar"
+<div ng-switch="myVar">
+  <div ng-switch-when="dogs">
+    <h1>Dogs</h1>
+    <p>Welcome to a world of dogs.</p>
+  </div>
+</div
+
+-> The ng-if directive removes the HTML element if the expression evaluates to false.
+
+Q) what is difference betweeen ng-show/ng-hide and ng-if?
+Ans:
+	-> When an element is removed using ngIf its scope is destroyed and a new scope is created when the element is restored. 
+	The scope created within ngIf inherits from its parent scope using prototypal inheritance.
+	If ngModel is used within ngIf to bind to a JavaScript primitive defined in the parent scope, any modifications made to the variable within the child scope will not affect the value in the parent scope, e.g.
+
+	<input type="text" ng-model="data">
+	<div ng-if="true">
+		<input type="text" ng-model="data">
+	</div>        
+	To get around this situation and update the model in the parent scope from inside the child scope, use an object:
+
+	<input type="text" ng-model="data.input">
+	<div ng-if="true">
+		<input type="text" ng-model="data.input">
+	</div>
+	Or, $parent variable to reference the parent scope object:
+
+	<input type="text" ng-model="data">
+	<div ng-if="true">
+		<input type="text" ng-model="$parent.data">
+	</div>
+
+Q) How to add multiple module in the angular1?
+Ans:
+	var moduleA = angular.module("MyModuleA", []);
+	moduleA.controller("MyControllerA", function($scope) {
+	  $scope.name = "Bob A";
+	});
+
+	var moduleB = angular.module("MyModuleB", []);
+	moduleB.controller("MyControllerB", function($scope) {
+	  $scope.name = "Steve B";
+	});
+
+	angular.module("CombineModule", ["MyModuleA", "MyModuleB"]);
+
+Q) what is difference between following two statement.
+   angular.module('module_name',[]); and angular.module('module_name');
+ Ans: first one :- register the module to the angular
+      second one: it provide the reference of the registered module
+	  
+Q) How do we pass informtion between controller?
+Ans:
+	There are a number of ways to communicate between controllers.
+ -> parent-Child controller communication: Variables defined on the parent's scope are copied to the child's scope.
+			<div ng-controller="ParentCtrl">
+				<h1>{{ title }}</h1>
+				<div ng-controller="ChildCtrl">
+					<h1>{{ title }}</h1>
+				</div>
+			</div> 
+		 -> If a child defines a variable with the same name as a variable on the parent's scope, the child is effectively shadowing (hiding) the parent-scope variable.
+		 -> Children can directly access the parent-scope (even modify it), but the parent cannot access it's children's scopes.
+		 -> Angular scopes include a variable called $parent (i.e. $scope.$parent) that refer to the parent scope of a controller. If a controller is at the root of the application, 
+			the parent would be the root scope ($rootScope).
+			<div ng-controller="ParentCtrl">
+				<h1>{{ title }}</h1>
+				<p>{{ description }}</p>
+				<div ng-controller="ChildCtrl">
+					<h1>{{ title }}</h1>
+					<input type="text" ng-model="$parent.description" />
+				</div>
+			</div>
+	-> non parent-child relation:
+	   -> we can share the data between controllers in three ways:
+          1) Factory: Object is created inside the factory and return it .
+          2) Service: With the service, you just have a standard function that uses the this keyword to define function.
+          3) Provider: With the provider, there’s a $get you define and it can be used to get the object that returns the data.
+
+Q) how to declare the controller using function in angularJS?
+Ans:  
+	function ThirdController($scope, sharedService) {
+		$scope.$on('handlePublish', function() {
+			$scope.sharedmessage  = 'ThirdController: ' + sharedService.sharedmessage ;
+		});
+	}
+	FirstController.$inject = ['$scope', mySharedService];
+	
+Q) Does $rootScope use $emit and $broadcast event. if so? does it work in the same way as $scope?
+Ans: 
+	The $rootScope Object has the identical $emit, $broadcast, $on methods, but they work slightly differently to how $scope implements them. 
+	As $rootScope has no $parent, using an $emit would be pointless, right? Nope, instead, $rootScope.$emit will fire an event for all $rootScope.$on 
+	listeners only. The interesting part is that $rootScope.$broadcast will notify all $rootScope.$on as well as $scope.$on listeners, subtle but very important 
+	difference if you want to avoid issues in your application
+Note: Events can be unsubcribed/stop propagation/cancelled
+		  
+
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   
+	   

@@ -1,0 +1,58 @@
+====================== Asymmetric Encryption =================
+-> Asymmetric Cryptography, also known as Public Key Cryptography:
+   1. RSA 2. Diffie-Hellman 3. ElGamal 4. DSS
+-> Example of RSA to get private and public key: 
+    KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
+	kpg.initialize(2048);
+	KeyPair kp = kpg.genKeyPair();
+	Key publicKey = kp.getPublic();
+	Key privateKey = kp.getPrivate();
+-> we can use use private and public key in Cipher technique to encrypt\decrypt string 
+   Example:
+   Encrypt Data: 
+       public SealedObject encryptData(String data, Key pubKey){
+		SealedObject myEncryptedMessage = null;
+		try{
+			cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+			myEncryptedMessage = new SealedObject( data, cipher);
+			System.out.println("alogrithm:"+myEncryptedMessage.getAlgorithm());
+		 }
+		 catch(Exception e){
+			System.out.println(" Exception while encrypting data:"+e);
+		 }
+		return myEncryptedMessage;
+	  }
+	Decrypt data:
+		public String decryptData(SealedObject myEncryptedMessage, Key privateKey){
+			String data = null;
+			try{
+				cipher.init(Cipher.DECRYPT_MODE,  privateKey);
+				data = (String) myEncryptedMessage.getObject(cipher);
+			}
+			catch(Exception e){
+				
+			}
+			return data;
+		}
+Q) what is SealedObject? 
+===================== Symmetric Encryption ================
+-> The most popular Symmetric Algorithms are:
+   1. DES, 2. Triple-DES, 3. AES, 4. Blowfish, 5. RC2, 6. RC4(ARCFOUR), 7. RC5, 8. RC6.
+   Code example:
+      Cipher cipher = Cipher.getInstance("AES");
+	  Key key = ... // get / create symmetric encryption key
+	  cipher.init(Cipher.ENCRYPT_MODE, key);
+	  cipher.init(Cipher.DECRYPT_MODE, key);
+	  byte[] cipherText1 = cipher.update(data1);
+	  byte[] cipherText = cipher.doFinal(plainText.getBytes());
+	  
+========================= Hashing Encryption Algorithm =====================
+-> Java Secure Hashing – MD5, SHA256, SHA512, PBKDF2, BCrypt, SCrypt.
+-> This is a kind of one way algorithm. means encrypted code can't be converted back to given String.
+-> Please remember that once this password hash is generated and stored in the database, you can not convert it back to the 
+   original password.
+-> code example:
+         MessageDigest md = MessageDigest.getInstance("MD5");
+		 md.update(passwordToHash.getBytes());
+		 byte[] bytes = md.digest();
+	  

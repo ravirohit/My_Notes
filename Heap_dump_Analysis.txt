@@ -1,0 +1,12 @@
+-> 
+basic infor about heap dump:
+https://www.baeldung.com/java-heap-dump-capture
+-> heap dump location: 
+C:\Users\raviro\OneDrive - Hewlett Packard Enterprise\Project_Doc\SIMULAP\Memeory_analysis\jconsole_screen_shot\Old
+
+
+=========
+-> heap dump: A heap dump is a snapshot of all the objects that are in memory in the JVM at a certain moment.
+              -> extension of heap dump file is .hprof. 
+-> different tool to capture heap dump:
+   1. jmap 2. jcmd  3. JVisualVM  4. 

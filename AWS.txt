@@ -1,0 +1,149 @@
+
+----------------------- of use -----------
+->  login use id: 
+   -> ec2-user@ec2-18-223-97-201.us-east-2.compute.amazonaws.com and add ppk and connect to the EM2 instance  //username@public_DNS
+   -> Elastic IP: 18.191.56.19
+-> munsiji URL: http://ec2-18-223-150-123.us-east-2.compute.amazonaws.com/munsiji-service/index.html
+-> by default, ip and public dns of the ec2 changes on every restart of the ec2 instance. So question is how can we make it static?
+-> Elastic IP address: An Elastic IP address is a public IPv4 address that you can allocate to your account. You can associate it to and from 
+                      instances as you require, and it's allocated to your account until you choose to release it.
+------------------ note -----------
+-> The area we should be focusing in AWS:
+   1. EC2(Elastic compute cloud)  2. VPC  3. S3 4. RDS  5. DynamoDB 
+   6. AWS API   7. AWS SDK 8. Security 9. Lambda
+   10. IAM: identity and Access Management// which is all about authentication, authorization and accountability, control user, groups and role
+
+-> EC2 is based on thed xen virtualization and free tier.
+   -> when we provision and EC2 instance, the AMI is the starting point.
+   -> used to created Linux or Windows instance.
+   -> The Elastic IP address is necessary because Amazon Web Service changes the machine name whenever you stop and start a site. The Elastic IP gives 
+      you a constant address that you can use for accessing your ArcGIS Server.
+-> VPC: this part is completely related to networking stuff(net, subnet, Gateway, Route table, router and how multiple instance in multiple region 
+        communicate)
+   -> when we are going to create our own network of instance. then this service will come into the picture.
+   -> we can associate the created VM instance to any of the default of manually created VPC.
+   -> in short, VPC is nothing but a network of EC2 instance.
+   -> whenever we are deleting custom VPC, it is must to delete the EC2 instances first belonging to this VPC. 
+-> Simple Storage Service(S3): 
+   -> can store files and object
+   -> can have versioning enabled
+   -> can enable encryption
+   -> basically we can say, we can use S3 just like Google drive to stores files.
+-> Designing and developing with AWS services:
+   -> sqlDB and non-sqlDB
+-> Database service: 
+   RDS: services -> RDS -> launch db instances -> select MySql -> then select dev/test version -> provide all the configuration for the information
+   DynamoDB: It is non-SQL db provided by Amazon just like mangoDB.
+   
+   
+   
+----------------- AWS configuration -----------------
+-> How to install wildfly in EC2 Redhat instance:
+   -> download wildfly zip file:  http://download.jboss.org/wildfly/10.1.0.Final/wildfly-10.1.0.Final.zip
+   -> copy to the linux server in any folder here take it as: /opt/
+   -> unzip it
+   -> do some configuration change run the 
+      #sh /data/wildfly-10.1.0.Final/bin/standalone.sh    // now server is up
+-> configuration changes in wildfly to make it available from anywhere in the network:
+    By default, wildfly server address is binded to 127.0.0.1 ie localhost & we can access it only using 127.0.0.1 or localhost. To be able to access 
+   wildfly from anywhere on LAN, we need to bind our system IP address instead of 127.0.0.1.
+   -> NOTE: make sure to provide private IP instead of public IP.
+   $ vi /opt/wildfly-10.1.0.Final/standalone/configuration/standalone.xml
+	<subsystem xmlns=”urn:jboss:domain:webservices:2.0″>
+	<wsdl-host>${jboss.bind.address:<system_private_IP>}</wsdl-host>
+	<endpoint-config name=”Standard-Endpoint-Config”/>
+
+	<interface name=”management”>
+	<inet-address value=”${jboss.bind.address.management:<system_private_IP>}”/>
+	</interface>
+
+	<interface name=”public”>
+	<inet-address value=”${jboss.bind.address:<system_private_IP>}”/>
+	</interface>
+-> mapping from private ip to the public ip is being taken care by EC2/AWS itself.
+-> How to make wildfly accessible from internet/browser:
+   -> make http inbound and https inbound to 80 and 443 respectively.
+   -> in the file /opt/wildfly-10.1.0.Final/standalone/configuration/standalone.xml, bind the http port and https port to 80 and 443 respectively.
+-> Now start the wildfly:
+   #sh /opt/wildfly-10.1.0.Final/bin/standalone.sh
+   // now would be able to access it from Internet with below URL:
+   for http:  http://ec2-18-191-56-19.us-east-2.compute.amazonaws.com/         // which is nothing  but just public DNS of EC2 instance
+   
+----------------------------
+-> install mysql to the linux instance: //link: https://www.tecmint.com/install-latest-mysql-on-rhel-centos-and-fedora/
+   -> download from https://repo.mysql.com/mysql80-community-release-el7-1.noarch.rpm
+   -> yum localinstall mysql80-community-release-el7-1.noarch.rpm            // add the yum repo of mysql to the yum repository
+   -> yum repolist enabled | grep "mysql.*-community.*"
+   -> yum install mysql-community-server
+   -> service mysqld start
+   -> service mysqld status
+   -> mysql --version
+   -> mysql -u root -p Password@1234                 // temporary password: ";apRH&:nY8hj"
+   -> mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'MyNewPass';                // after first login, must to reset password.
+   
+   
+NOTE: temporary password generated by yum install to mysql db is in : cat /var/log/mysqld.log   after setting password: Password@1234
+   
+-------------------------
+-> How to install postgresql in the EC2 instance?
+   -> sudo bash
+   -> yum list postgresql*
+   -> yum install postgresql-server.x86_64
+   -> yum list installed | grep postgresql*
+   -> service postgresql status
+   -> service postgresql initdb
+   -> service postgresql start                    // service postgresql start was calling initdb when the cluster was not initalized.
+   -> chkconfig postgresql on                    // to Starting PostgreSQL automatically at system startup
+-> Accessing postgresql:
+   Note:  in order to connect to PostgreSQL you must be logged in as the correct OS user. 
+   #su - postgres
+   #psql
+   postgres=#\l         // list the databases;
+   postgres=#\c new_db  // switching to the db new_db
+   new_db=#\dt          // listing the tables within the db.
+   
+   
+   
+============== error while installing app in ec2 
+-> #yum install java       // it is throwing below error: this command is to installed latest java version
+   ERROR: You need to be root to perform this command.
+   Solution: #sudo bash          // it will change the user type to root. now run the command it will work fine.
+-> run to check the version of installed java and javac
+   #java -version    // working fine and giving output
+   #javac -version   // not working and giving below error:   
+   ERROR: Unable to find javac after installing OpenJDK 1.6 and 1.7
+   Solution: This might be because of develper version of java is not installed. which it doesn't contains developing tools like compiler.
+          so we have to install:
+		  #yum install java-devel          // after this run "javac -version"  it will work fine
+		  
+-> [root@ip-172-31-28-2 tmp]# unzip wildfly-10.1.0.Final.zip
+	bash: unzip: command not found
+    Solution: # yum install zip unzip -y
+	
+-> Error:
+   Caused by: java.sql.SQLException: Unable to load authentication plugin 'caching_sha2_password'.
+   at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:569)
+   Solution:
+    Hint: https://www.spigotmc.org/threads/mysql-errors-unable-to-load-authentication-plugin-caching_sha2_password.304616/
+    -> loging to the mysql db
+	-> DROP USER 'root'@'localhost';    // drop the existing user
+	-> CREATE USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Password@1234';
+-> Error:
+   Caused by: java.sql.SQLException: Unknown system variable 'query_cache_size'
+   Solution:
+    In pom file of your project, just update the version of the dependency.
+    For example it's 6.0.2 of mysql java connector just update it to latest one like 8.0.11
+   
+	
+========== Q&A =====================
+Q) How to we make the ec2 instance having static public IP and public DNS?
+Ans: If you require a persistent public IP address that can be associated to and from instances as you require, use an Elastic IP address instead. 
+
+Q) Difference between Amazon ec2 and AWS Elastic Beanstalk.
+
+        
+   ====================
+    yum install httpd
+=================
+-> configure SSL in wildfly 10:
+   -> 

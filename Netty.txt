@@ -1,0 +1,103 @@
+Netty:
+-> Netty is a NIO client server framework which enables quick and easy development of network applications.
+-> Netty is an asynchronous event-driven network application framework for rapid development of maintainable high performance protocol servers & clients.
+-> Core Components of Netty:
+   1. Channels
+   2. Callbacks
+   3. Futures
+   4. Events and handlers
+-> These building blocks represent different types of constructs: resources, logic, and notifications. Your applications will use them to access 
+   the network and the data that flows through it.
+   1. Channels: An open connection to an entity  that is capable of performing one or more distinct I/O operations, for example reading or writing.
+                For now, think of a Channel as a vehicle for incoming (inbound) and outgoing (outbound) data.
+   2. Callbacks: A callback is simply a method, a reference to which has been provided to another method. This enables the latter to call the former 
+                at an appropriate time.
+                Netty uses callbacks internally when handling events; when a callback is triggered the event can be handled by an implementation of 
+				interface ChannelHandler.
+   3. Future:  A Future provides another way to notify an application when an operation has completed.
+               ChannelFuture provides additional methods that allow us to register one or more ChannelFutureListener instances. 
+			   Each of Netty’s outbound I/O operations returns a ChannelFuture; that is, none of them block.
+			   ChannelFuture provides additional methods that allow us to register one or more ChannelFutureListener instances. 
+			   The listener’s callback method, operationComplete(), is called when the operation has completed.
+   4. Events and handlers: 
+NOTE: Need to check: ChannelHandler 
+-> Under the covers, an EventLoop is assigned to each Channel to handle all of the events, including
+   Registration of interesting events
+   Dispatching events to ChannelHandlers
+   Scheduling further actions
+-> What are the basic I/O operation :
+   bind(), connect(), read(), write()
+========================================================
+-> Explain the following term:
+    Channel —Sockets
+	EventLoop —Control flow, multithreading, concurrency
+	ChannelFuture —Asynchronous notification
+-> Channel: In Java-based networking, the fundamental construct is class Socket.
+		   -> Different type of channel provided by Netty:
+			EmbeddedChannel
+			LocalServerChannel
+			NioDatagramChannel
+			NioSctpChannel
+			NioSocketChannel
+-> Event loop: The EventLoop defines Netty’s core abstraction for handling events that occur during the lifetime of a connection. 
+		 -> These relationships are:
+			An EventLoopGroup contains one or more EventLoops.
+			An EventLoop is bound to a single Thread for its lifetime.
+			All I/O events processed by an EventLoop are handled on its dedicated Thread.
+			A Channel is registered for its lifetime with a single EventLoop.
+			A single EventLoop may be assigned to one or more Channels.
+-> ChannelFuture: As we’ve explained, all I/O operations in Netty are asynchronous. Because an operation may not return immediately, we need a way to
+           determine its result at a later time. For this purpose, Netty provides ChannelFuture, whose addListener() method registers a 
+		   ChannelFutureListener to be notified when an operation has completed.
+-> ChannelHandler:  the primary component of Netty is the ChannelHandler, which serves as the container for all application logic that applies to 
+           handling inbound and outbound data.
+----------- CHANNELHANDLER AND CHANNELPIPELINE ----------------
+-> ChannelHandler: serves as the container for all application logic that applies to handling inbound and outbound data.
+           -> This is possible because ChannelHandler methods are triggered by network events.
+-> ChannelPipeline: A ChannelPipeline provides a container for a chain of ChannelHandlers and defines an API for propagating the
+           flow of inbound and outbound events along the chain.
+		   -> When a Channel is created, it is automatically assigned its own ChannelPipeline.
+		   -> ChannelHandlers are installed in the ChannelPipeline as follows:
+			  1. A ChannelInitializer implementation is registered with a ServerBootstrap.
+			  2. When ChannelInitializer.initChannel() is called, the ChannelInitializer installs a custom set of ChannelHandlers in the pipeline.
+			  3. The ChannelInitializer removes itself from the ChannelPipeline.
+		   -> The order in which they are executed is determined by the order in which they were added.
+		   -> both inbound and outbound handlers can be installed in the same pipeline.
+		   -> The outbound movement of data (that is, data being written) is identical in concept. In this case, data flows from the tail through the chain of 
+		      ChannelOutboundHandlers until it reaches the head.
+		   -> An event can be forwarded to the next handler in the current chain by using the ChannelHandlerContext that’s supplied as an argument to
+    		  each method.
+			  
+-------------- Encoders and decoders -------------------------------
+-> When you send or receive a message with Netty, a data conversion takes place. An inbound message will be decoded; that is, converted from bytes to 
+   another format, typically a Java object. If the message is outbound, the reverse will happen: it will be encoded to bytes from its current format. 
+   
+   The reason for both conversions is simple: network data is always a series of bytes.
+
+   
+   
+================================= Q&A ============================================
+Q) The second difference is perhaps more significant. Bootstrapping a client requires only a single EventLoopGroup, but a ServerBootstrap requires two 
+   (which can be the same instance). Why?
+Ans: 
+Q) what is difference between bootstrap.connect() and bootstrap.bind() method?
+Ans: Connect is how you connect a local machine to a remote machine.
+     Bind is how you get the server to listen for remote connections on a port.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

@@ -1,0 +1,22 @@
+-------------- CountDownLatch -------------------
+-> We can't pass value to anonymous class object using parameterized constructor.
+-> we use CountDownLatch when we have to keep one or multiple threads in waiting till some other N Action has completed.  
+   N is the value we pass in CountDownLatch constructor.
+-> it could be two cases:
+   - one thread is waiting to complete N other tasks
+   - N tasks are waiting to complete other single task.
+-> mostly, it becomes very important when we are handling Runnable task using ExecutorService.
+-> countdownlatch value can't go below 0. even if we will call countdownlatch.countDown(); it will not throw any exception 
+   and value will be 0 only. kind of pointless calling countdownlatch.countDown() after it's value reach to 0.
+-> once value went down. we can't reset value. 
+-> Three method we should be aware of:
+   CountDownLatch latch = new CountDownLatch(1);
+   latch.await();
+   latch.countDown();
+Q) How countdownlatch is differnt from t1.join() method?
+Ans: t1.join(): here current executing thread will wait till t1 thread completed.
+                - there is no way, current thread will start executing in between t1 is still goig on.
+				- we should must have Thread reference to hold the current running thread.
+    CountDownLatch: in short , there is no such constraint in CountDownLatch. it is very user friendly as well.
+                - it's a bit chalenging to right the logic to avoid deadlock.
+----------------- CyclicBarrier ---------------------

@@ -1,0 +1,510 @@
+chit.gokarna@gmail.com
+service slapd stop; service slapd start
+------------- SIPP ----------
+sipp -sf cmd_server_no_reason_ne_prack.xml -t u1 -d 2000 -p 6060 -trace_err
+sipp -sf cmd_server_no_reason_ne_prack.xml -t u1 -d 2000 -p 6060 -trace_msg -trace_err
+---------------------
+-> command to get information about the OS:
+   uname -a                              Print the kernel information of the linux
+   uname -r                              Print the kernel name
+-> #cat /etc/redhat-release              OS version
+-> #su -     							 
+   #updatedb                             kind of refresh the system
+-> get the name of the all the service installed on the server:
+   #ls /etc/init.d/                      provide the name of the service
+   #service --status-all                 -a or all.This will list all the running or stopped services
+-> -> command to show ip:
+   -> ip addr show                       information on each ethernet device connected. ip will be besides text "inet"
+   -> ip addr show eth0                  information for eth0 only 
+-> command to change the javac version:
+   -> change the version of java : 
+   #alternatives --config java                //alternatives utility may not install on the server then install using yum
+   -> to change the version of Javac:
+   #/usr/sbin/alternatives --config javac 
+---------- JVM -------
+jstack <see-pid> > abc.txt
+
+-------------------------------- of use -------------------
+tail -f /var/opt/OC/hpoc-see/wildfly/server/see-1/log/server.log
+#emscli ocadmin ocadmin
+#mysql -u root -p          //   "login to mysql"
+root/root
+for emscli:
+#emscli ocadmin ocadmin
+ -> app_server list
+ -> service_component list
+ 
+#tshark -i any -R sip          // after installing wireshark-1.8.10-7.el6_5.x86_64.rpm
+                               // tshark is being used to see call flow on console.
+#tshark -i any -w Rohit_SIPP_Participants23.pcap   // to generate pcat file for monitor
+#tshark -i any || grep <IP address>  
+#in pca file, filter key for different protocol request:  "tcp" || "http" || "sip" || "ldap"
+ - example:
+     (tcp) && (ldap.delRequest == "cn=tester24774,dc=nivr,dc=com")
+	 (ldap) && (ldap.messageID == 5886)
+
+
+ 
+   
+-------------------------------------------------------------------
+dd                                            delete the current line
+d5d                                           delete below four line including current line
+:set number                                   to disply line number
+:set nonumber                                 to turn off line number show
+:%s/MMCC notification failed with: 400//gn   to count the number of occurance in log file
+chmod -R 777 MMCC-POC-SamplesV2/              change access mode to all file under this folder.
+locate abc                                    To fine the location of the file/folder with name abc
+find / -name <file_name>                      command to search a file
+unzip myzip.zip                               unzip file in current directory
+rm -r dir_name   or rm -rf mydir              to remove directory with it's all content
+file / -name myfile*
+df                                             to Check Disk Space in Linux(disk file system)
+df -h                                          will shows the file system disk space statistics in “human readable” 
+mkdir -p                                       To create directory hierarchy
+rm -r mydir                                    To delete folder mydir and all sub-dir inside it
+rm -rf mydir                                   To avoid prompt for deleting each dir
+cp program3.cpp homework6.cpp                  Copy and rename in the same time 
+ln -s target new_link_name
+ln program3.cpp homework6.cpp                  If you want to have the files permanently linked use the ln command instead of cp
+mv program3.cpp homework6.cpp                  Rename only
+ls                                             list all files by name
+ls -a                                          list all files along with hidden files
+ls -alsg                                       list all file along with information name, date, protection.
+ls -s -h                                       list all file name and size
+ls -lart                                       may show hidden file in reverse order
+
+
+ll                                             alias of ls -alsg
+PMON                                           Process Monitor Process PMON
+                                               Process Monitor (PMON) cleans up abnormally terminated user processes.
+	                                           # pmon status  (used to the check the see process status)
+										   
+user add new_user                              add new user with name new_user
+passwd new_user                                add password for that user	
+su - new_user                                  change user mode to new_user in the open shell
+vim and vi
+											   vim is almost a proper superset of vi.
+											   Vim can be used to edit files using network protocols like SSH and HTTP.
+											   Vim includes support for several popular programming languages (C/C++, Python, Perl, shell, etc).
+											   i    -> convert to insert mode
+											   :q   -> exit from vi
+											   :q!  -> exit without saving
+lsof -i tcp:8124                               Get the PID running on port 8124
+ps                                             process status
+											   used to provide information about the currently running processes
+											   ps aux | less 
+											   ps -ef | grep "username"
+											   kill 1125             to kill process with process ID; 1125
+											   kill -9 1125          to kill forcefully 
+pkill -f jmeter                                to kill simulap application
+--- disk space related command ----
+df -h                                          show which file system is occuping how much memory
+du -skh *                                      show which folders/files occupying how much memory
+ls -ltrh                                       list files/folder with it's size.
+lvs                                            show logical valume with space.
+-------
+netstat -nape |grep 389 | grep "ESTABLISHED" | grep slapd   // ldap run on port 389: open connection for ldap db
+netstat -tulpn | grep 389                      to check which process is running on which port.
+netstat -anp | grep 389                        to check system is listening on that port.
+netstat                                        command is not working. install: "yum install 
+rpm                                            command and options
+											   -i: install a package
+											   -v: verbose for a nicer display
+											   -h: print hash marks as the package archive is unpacked.
+											   -q : Query a package
+											   -p : List capabilities this package provides.
+											   -R: List capabilities on which this package depends..
+											   -e: to erase/uninstall
+											   –nodeps: (no dependencies check
+	   
+rpm -qlpv package.rpm                       				   syntax to list the files for RPM package:
+rpm -qlv package-name                                       to list the files for already INSTALLED package:
+rpm -ivh pidgin-2.7.9-5.el6.2.i686.rpm                     to install the package
+rpm -q BitTorrent                                          to check an Installed RPM Package
+rpm -qa --last                                             to List Recently Installed RPM Packages
+rpm -qa                                                    to List All Installed RPM Packages
+rpm -Uvh nx-3.5.0-2.el6.centos.i686.rpm                    to Upgrade a RPM Package
+rpm -evv nx                                                to Remove a RPM Package
+rpm -ev --nodeps vsftpd                                    to Remove an RPM Package Without Dependencies
+rpm -qf /usr/bin/htpasswd                                  to Query a file that belongs which RPM Package
+example:
+[root@vbox17 ~]# rpm -qf /opt/OC/share/hpoc-connector-tests/tests/execute-tests.sh
+hpoc-jdbc-nrt-test-1.3.2-2.022916.snap.el6.noarch
+rpm -qi vsftpd                                             to Query a Information of Installed RPM Package
+rpm -Vp sqlbuddy-1.3.3-1.noarch.rpm                        to Verify a RPM Package
+rpm -qlvp abc.rpm                                          to show package content info from the rpm file
+rpm -qlv abc.rpm                                           to show package content info from installed rpm
+rpm -ql  installed package name
+top                                                        to see the live status, which process is utilizing what amount of memory
+last | head -4                                             show you recent logins on your system
+ps -eaf | grep mysql                                       to get the process id
+tar -zcvf mysql-proxy-0.8.4-linux-el6-x86-64bit.tar mysql-proxy-0.8.4-linux-el6-x86-64bit
+tar -zxvf mysql-proxy-0.8.4-linux-el6-x86-64bit.tar.gz
+
+-> Steps to rebuild Corrupted RPM Database
+   cd /var/lib
+   rm __db*
+   rpm --rebuilddb
+   rpmdb_verify Packages
+curl                                                       is a tool to transfer data from or to a server, using one
+														   you can use curl to download content from the internet.
+														   By default, the output will be to the command line but you can also specify a filename to save the file to.
+
+cat /etc/yum.conf                                          have the config information about yum command;
+#updatedb
+#service iptables status
+#cat /var/run/see-1.pid                                    to see the status of the process id
+#netstat -tlpn | grep mysql                                to check port of mysql
+#popd                                                      to remove saved directory info in stack
+#pushd /root/temporary                                     to save directory info in stack
+#dirs -v                                                   to list the all saved directory in stack
+
+#netstat -np | grep < port no >                            to listen the packet flow at provide port no.
+#vim /var/log/messages                                     to see the log on which port message is listen like: snmp
+#cat /etc/services | less                                  to see all the open port on the vbox.
+#find / -name "*.jar" | xargs grep ServiceCmpImpl.class    Linux cmd to search for a class file among jars irrespective 
+                                                           of jar path
+#scp -r /local/directory/ username@to_host:/remote/directory/    Copy directory from local host to a remote hos SCP
+#grep -rnw '/' -e 'smpp-cli-wildfly-modules'               find files containing pattern provided.
+
+--- to know: 
+by default value for open file(depends on soft link and hard link):
+		#ulimit -a    // show the default value for all parameter
+		but what we need here is;
+		#ulimit -Sn   // output: 1024
+		#ulimit -Hn    // output: some default value
+------------------
+YUM: Yellowdog Updater Modified
+-> Yum is the Red Hat package manager that is able to query for information about available packages, fetch packages from repositories, install and
+   uninstall them, and update an entire system to the latest available version. 
+
+#yum list postgresql*
+#yum list all											   Lists all installed and available packages.
+#yum list installed                                        Lists all packages installed on your system. The rightmost column in the output lists the 
+														   repository from which the package was retrieved.
+#yum install                        
+#yum makecache                                             to make sure that the cache is fully up to date with all metadata.
+#yum clean all											   To remove all entries for currently enabled repositories from the cache
+#yum repolist enabled                                      check and verify new repositories are configured. it shows all configured repo
+#yum info package_name                                     // to check if the package is installed
+#yum update pacakge_name                                   // to update the package on the rhel
+#yum check-update                                          // to check what all udpate is available for the OS
+#yum list available java\*                                 // to check what update available for java 
+#.bash_profile in root
+#/etc/yum.repos.d/										   YUM Repository configuration files in /etc/yum.repos.d/ directory
+#cat /etc/resolv.conf                                      defines how the system uses DNS to resolve host names and IP addresses.
+#cat /etc/hosts                                            The /etc/hosts file contains a mapping of IP addresses to URLs. Your browser uses entries
+                                                           in the /etc/hosts file to override the IP-address-to-URL mapping returned by a DNS server. 
+														   
+
+-------------
+#config-tools-db.sh -s
+#imms status;
+-> way to clean:
+
+#/sbin/service pmonitord stop
+#immsctl clean -y                                           to clean the connector configuration from SEE
+#/opt/OC/share/hpoc-see-simplex/install/configure.sh        to run, it need to stop pmonitored service
+-> undeploy see:
+#see0
+#see-cluster status             // no service will be running
+#/opt/OC/share/hpoc-see-simplex/install/configure.sh 
+#see-cluster status             // all need service will be running---------------------
+--------------
+
+
+JAVA_HOME=JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.181-3.b13.el7_5.x86_64/
+----------------
+-> Configuring Proxy Server Access for a Single User:
+   -> the profile is the file ~/.bash_profile. The settings below enable yum to use the proxy server mycache.mydomain.com, 
+      connecting to port 3128.
+	 # The Web proxy server used by this account
+       http_proxy="http://mycache.mydomain.com:3128"
+       export http_proxy
+	       or
+     # The Web proxy server, with the username and password for this account
+       http_proxy="http://yum-user:qwerty@mycache.mydomain.com:3128"             // userName: yum-user and pwd: qwerty
+       export http_proxy
+------- Selinux ---------------
+-> There is three mode of Security Enhanced in the Rhel 7:
+   1. enforcing
+   2. permissive
+   3. Disabled                 // note:  In order to swap to the disabled mode, a system REBOOT will be required.
+-> Q) check selinux status:
+   #getenforce
+   #sestatus
+   Note: both of these show that we are current mode.
+-> different ways to change the mode of Selinux:
+   1. SELinux Runtime Configuration
+      #setenforce 0              // to swap to permissive mode
+	  #setenforce 1             // to swap to enforcing mode
+      Note: We cannot disable selinux at runtime, as swapping to or from the disabled mode requires a system reboot.
+   2. SELinux Persistent Configuration:
+      -> edit the /etc/selinux/config text file with our persistent setting, either enforcing, permissive, or disabled.
+	  -> simply edit the SELINUX variable between enforcing, permissive, or disabled.
+	  -> change after system reboot.
+-> Disable the Linux firewall(rhel 7).
+
+    -> for RHEL 7
+	            #systemctl disable firewalld
+	root_prompt #service firewalld stop              // stop firewall service but again started after os reboot
+	root_prompt #service firewalld start             // start firewall service
+	root_prompt #systemctl disable firewalld         // disable the firewall. it make sure service will not start even 
+	                                                    after os reboot
+	root_prompt #systemctl enable firewalld          // to again enable the firewall
+	root_prompt #systemctl stop firewalld            // not sure about this command
+	root_prompt #systemctl mask firewalld            // not sure about this command
+	                    OR
+    -> for RHEL 6
+	root_prompt #service iptables stop
+	root_prompt #chkconfig ipchains off
+	root_prompt #chkconfig iptables off
+---> what i use:
+    -> Before stop the iptables, save the firewall setting
+       #service iptables save
+	   #service iptables stop
+	   #service iptables status
+	-> To ensure that iptables will not started at boot time
+	   #chkconfig iptables off
+	-> If IPv6 firewall is enabled, please disable it
+	   #service ip6tables save
+	   #service ip6tables stop
+	   #service ip6tables status
+	-> To ensure that iptables will not started at boot time
+	   #chkconfig ip6tables off
+	
+----------------------- Q&A ------------
+Q) How to search multiple string in vim?
+Ans:Example: /StringOne\|StringTwo
+              OR 
+    />>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\|<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+Q) what is use of ~/.bash_profile file in linux?
+Ans: The .bash_profile file is a personal initialization file for configuring the user environment.
+   like .bash_profile there are others initialization file:
+    /etc/profile	
+	~/.bash_login
+	~/.bash_logout
+   
+Q) what are the partitions in the linux fils system?
+Q) How to check which file system is using how much disk space?   hint: df -h
+Q) how to extend default file system size to the new size on RHEL 7.4?
+Ans: 
+	 fdisk -l  .... vgdisplay ....... pvdisplay
+	 lvs
+	 df -h
+	 lvextend -L+5G /dev/mapper/VolGroup00-root_vol      <- it will provide the 5GB space to the logical volume
+	 xfs_growfs /dev/mapper/VolGroup00-root_vol           <-   it will expend the volume
+Q) how to change the version of active java if installed multiple java on the rhel system?
+Ans: -> while executing this command it might get failed with error:
+	  "install the require JVM on your target system"
+	 follow the below steps as suggested on the putty console:
+	 #java -version
+	 #alternatives --config java
+	    4             (provide 4 as input)
+	 it will ask you to select option to select what you software you want to select( i select 4 for java 1.8)
+	 -> now we can run "java --version" to check what java version is active on the server
+	-> change the version of java : 
+	   #alternatives --config java                //alternatives utility may not install on the server then install using yum
+	-> #javac -version
+	-> to change the version of Javac:
+	   #/usr/sbin/alternatives --config javac 
+Q) How to set environment variable in linux? like defined JAVA_HOME environment variable:
+Ans: open /etc/environment file       
+     #vim /etc/environment
+     append the below test in the last line of the file. save and exit:
+	 JAVA_HOME=JAVA_HOME=/usr/lib/jvm/java-1.8.0
+	 reload the system path with below command:
+	 #. /etc/environment
+	 check the value of the environment variable as below:
+	 #echo $JAVA_HOME
+	 output: /usr/lib/jvm/java-1.8.0
+	 
+Q) ping is not working on the system even from the same system.
+Ans: -> steps to be done to enable ping on the linux 6. ping work on ICMP protocol
+	 -> It can be a setting in the kernel or iptables.
+		Edit /etc/sysctl.conf
+		net.ipv4.icmp_echo_ignore_all=0        from 1
+	 -> run the command to reflect the change:  
+        #sysctl -w    or reboot the system.
+Q) why won't x11 display work through ssh login?
+Ans: Need to install following package:
+     xorg-x11-xauth-1.0.9-1.el7.x86_64.rpm          // required package
+	 // below are dependency package for above one:
+	 libXmu-1.1.2-2.el7.x86_64.rpm
+	 libXt-1.1.5-3.el7.x86_64.rpm
+	                 or 
+	-> in case of RHEL 7, try below steps:
+	•	Edit /etc/ssh/sshd_config and change #AddressFamily any to AddressFamily inet as below
+		Raw
+		# cat /etc/ssh/sshd_config | grep -i AddressFamily 
+		AddressFamily inet
+		•	Restart the SSH service
+		•	Now login with putty/SSH (Xming running in background)
+		Raw
+		# yum install xorg-x11-xauth xorg-x11-fonts-* xorg-x11-utils            // may required or may not
+Q) how to enable vnc on the linux:
+Ans: for rhel 6.*:
+    [root@vbox11 web-server]# rpm -qa | grep vnc
+		gtk-vnc-python-0.3.10-3.el6.x86_64
+		tigervnc-server-1.1.0-16.el6.x86_64
+		gtk-vnc-0.3.10-3.el6.x86_64
+	# vncserver &           // to dubug check the file: /root/.vnc/vbox13:1.log
+	-> for RHEL 7.*
+	 [root@vbox13 ~]# rpm -qa | grep vnc
+		gtk-vnc-python-0.7.0-3.el7.x86_64
+		tigervnc-server-module-1.8.0-5.el7.x86_64
+		tigervnc-license-1.8.0-13.el7.noarch
+		tigervnc-server-minimal-1.8.0-13.el7.x86_64
+		tigervnc-server-1.8.0-13.el7.x86_64
+		gvnc-0.7.0-3.el7.x86_64
+		gtk-vnc-0.7.0-3.el7.x86_64
+		tigervnc-server-applet-1.8.0-5.el7.noarch
+	# vncserver &           // to dubug check the file: /root/.vnc/vbox13:1.log
+		NOTE: you might not able to connect the linux box using vnc viewer. check file /root/.vnc/vbox13:1.log
+		ERROR: Killing Xvnc process ID 8599
+		Solution: https://unix.stackexchange.com/questions/487422/vncserver-dies-immediately-upon-start
+	#vncserver -list
+	#vncserver -kill <X-display>
+	 Ex: #vncserver -kill :1
+Q) Command to check, a port is being used by which application?
+Ans: Example: 
+    #netstat -anp| grep 162
+	udp        0      0 0.0.0.0:162                 0.0.0.0:*                               32113/snmptrapd
+	unix  2      [ ]         STREAM     CONNECTED     16200  2217/java
+Q) What is difference between su and sudo?
+Ans: ‘su‘ forces you to share your root password to other users whereas ‘sudo‘ makes it possible to execute system 
+   commands without root password.
+Q) what is the use of the following repo file in yum :
+   1. redhat.repo
+   2. rhel-source.repo
+   3. rhel-update.repo
+Q) Error:
+   Another app is currently holding the yum lock; waiting for it to exit...
+Ans: Solution: #ps aux | grep yum
+               #kill -9 yum process_id
+Q) what is rhel upgrade command?
+Ans:"#yum update" will update all OS software. You should then reboot the machine (or the impacted services) so that the 
+    latest shared libraries/kernel are used.
+   -> If your solution only supports a given RHEL minor version then don't use the above command as it will also update you to the latest RHEL minor version when available.
+   -> minor release update means. it will update the rhel 6.x to 6.y which is the latest in that repo.
+ NOTE: a minor release is NOT the latest security fixes. 
+   means minor release may not have the latest security fixes. there would be some repo where hpe people would have 
+   keep the latest security patches to install it for the same minor version of rhel.
+        -> so to upgrade the security patches, we are not suppose to upgrade the rhel minor version but instead we 
+		should add the repo where latest patches are available and update it from there with command:
+	     #yum install --security     // will update the security patches 
+       
+Q) Command to remove old kernel package and keep only the latest one?
+Ans:# package-cleanup --oldkernels --count=1
+    // few other rpm related to kernel may not removed then need to removed using rpm. ex:
+	#rpm -e kernel-debug-devel-2.6.32-696.el6.x86_64
+
+Q) if two machine is not connecting.. in the network usign ssh. what is troublshoot?
+Ans: check the Gateway IP address and Gateway mask ip:
+    #route -n  // it will show the details/
+	
+Q) How to keep rhel session alive in putty for all session for vbox?
+Ans: update the value for below property in file /etc/ssh/sshd_config:
+    ClientAliveInterval 30000
+	ClientAliveCountMax 30000
+Q) If two linux machine is not connecting using ssh but i am able to login both of them from windows. then prblm is?
+Ans: trouble shoot steps:
+   1. check the gateway ip on both the system
+   2. check the netmask ip on both the system  // ifcfg-eth0/ifcfg-ens192
+
+Q) How to downgrade an rpm using rpm command:
+Ans: rpm -Uvh --oldpackage [filename]
+   hint: https://serverfault.com/questions/274310/how-do-i-downgrade-an-rpm-on-a-machine-without-yum
+
+Q) How to update RHEL OS from 6.7 to 6.8?
+Ans: update the file /etc/yum.repos.d/RHEL-HA.repo which is point to RHEL 6.8 repository. 
+   and run below command: 
+   #yum update      // it will update your whole system along with kernel to 6.8 version.
+   validation command: 
+   #cat /etc/redhat-release
+Q) How to restrict few rpm from being update whild upgrading system?
+Ans: add the selected rpm in versionlock. it doesn't get updated.
+   https://access.redhat.com/solutions/98873
+   https://bugzilla.redhat.com/show_bug.cgi?id=1497351
+  
+   
+	  
+======================= ssh authentication to connect to remote server =========================
+ssh-copy-id
+-> How to add new use in linux environment:
+   # user add new_user   // 
+     or #useradd new_user
+   #passwd new_user      // add password for that user
+   
+-> How to change user in the open linux shell:
+    #su - new_user      // change the user mode to new_user
+-> genrate key for the new_user:
+    #su - new_user
+	#ssh-keygen    //generate public/private rsa key pair, create two file as id_rsa and id_rsa.pub
+	#ssh-copy-id remote_server_ip   // copy pub key to the remote server
+	#ssh-copy-id remote_server_ip   // if run again, it will tell key already copied to the remote server
+	#ssh remote_server              // it will login to the remote server without prompting for the password.
+	
+	
+====================== to check =====================================
+find / -name  *ems* |wc -l
+use of audit.log at location: /var/log/audit/audit.log
+ll firewall-tools.pid
+vim /var/log/messages
+dmidecode | more
+How to get status of JVM while our application is not deploying properly
+   strace /usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-1.b13.el6.x86_64/bin/java 
+   man strace
+   cat ems-stdout.log  /var/tmp and /var/tmp/yum.log
+ps -eaf | grep java
+/opt/OC/bin/config-tools-db.sh -h     // to know the bundle
+/var/run/syslogd.pid    // to know about it
+cd /var/opt/OC/log/coam/imm.log
+
+=================================== Unix FileSystem ==============================
+-> /opt: /opt is reserved for the installation of add-on application software packages.
+         -> A package to be installed in /opt must locate its static files in a separate /opt/<package> or /opt/<provider> directory tree, where <package> is a name that describes the software package and <provider> is the provider's LANANA registered name.
+		 -> Programs to be invoked by users must be located in the directory /opt/<package>/bin.
+		 -> If the package includes UNIX manual pages, they must be located in /opt/<package>/share/man.
+		    like: /opt/OC/share/man/man1
+		 -> Package files that are variable (change in normal operation) must be installed in /var/opt.
+		 -> Host-specific configuration files must be installed in /etc/opt.
+		 -> No other package files may exist outside the /opt, /var/opt, and /etc/opt
+-> /etc: The /etc hierarchy contains configuration files. A "configuration file" is a local file used to control the operation of a program; 
+         -> it must be static and cannot be an executable binary. 
+		 -> Host-specific configuration files for add-on application software packages must be installed within the directory /etc/opt/<subdir>
+-> /var: /var contains variable data files. This includes spool directories and files, administrative and logging data, and transient and temporary
+         files.
+		 /var/opt/<subdir>: contains the variable files of the add-on software.
+-> 
+	
+	#cat /proc/sys/net/netfilter/nf_conntrack_max
+	#vim /etc/sysctl.conf
+      -	Add below line in the file: 
+      net.netfilter.nf_conntrack_max = 131072
+      Note: default value would be 65536. So make it double.  
+    #sysctl -p
+	#cat /proc/sys/net/netfilter/nf_conntrack_max
+
+	
+   
+     
+	  
+	
+	
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  
+	  

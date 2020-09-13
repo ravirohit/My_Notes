@@ -1,0 +1,46 @@
+-> How to compare two Strings in java program?
+  -> Java String implements Comparable, So we can use compareTo() method as well.
+  -> this case equals(String str)
+-> is compareTo() and equal() method is interchangeable?
+  - no. 
+  - compareTo() method return type is -ve, 0 or +ve value. 
+  - str.compareTo(null) throws null pointer exception.
+  - equal() method return type is boolean type. 
+  - str.equal(null) return false.
+   
+-> String can be used in Switch case from java 7.
+-> write a programme to print all permutation of String.
+-> Different between String, StringBuffer(ThreadSafe), StringBuilder(not ThreadSafe)
+-> Why is String immutable or final in java.
+   - String Pool is possible because String is immutable in java.
+   - It increases security because any hacker can’t change its value and it’s used for storing sensitive information such as database username, password 
+     etc.
+   - Since String is immutable, it’s safe to use in multi-threading and we don’t need any synchronization.
+   - Strings are used in java classloader and immutability provides security that correct class is getting loaded by Classloader.
+   - Immutable strings increase security.
+-> Why Char array is preferred over String for storing password?
+   - Since Strings are immutable in Java if you store password as plain text it will be available in memory until Garbage collector clears it.
+     it pose a security threat. Since any one who has access to memory dump can find the password in clear text.
+   - Since Strings are immutable there is no way contents of Strings can be changed because any change will produce new String, while if you char[] you  
+     can still set all his element as blank or zero. So Storing password in character array clearly mitigates security risk of stealing password.
+   - With String there is always a risk of printing plain text in log file or console but if use Array, object ref get printed in log file.
+-> Why String is popular HashMap key in Java?
+   - Strings are frequently used as keys in maps so it is a best case for caching the hashcode. String class has a built-in hashcode caching mechanism.
+-> What will be output of below code:
+    String s1 = "abc";
+	StringBuffer s2 = new StringBuffer(s1);
+	System.out.println(s1.equals(s2));   // false
+-> number of object get create: 
+     String s1 = new String("Hello");  // 2
+	 String s2 = new String("Hello");  // 1  ... total=3
+-> String contant pool: is the memory space in heap memory specially allocated to store the string objects created using string literals. 
+-> Which is the final class in these three classes – String, StringBuffer and StringBuilder?
+   Ans: All three 
+-> How substring() method of String class use to create memory leaks before Java 7?
+     String str1 = "Hello, this is Java"; offset = 0, count = 19
+     String str2 = str1.substring(7, 11); offset = 7, count = 4
+	 str1 = null;
+   Ans: 
+      str2 holds the value string "Hello, this is Java" which is not at all required, instead it should store "this".
+      Basically, str2 still points to the same string referenced by str1, because of which even str2 needs small portion of the string "this" but big string "Hello, this is Java" will not be garbage collected as str2 is holding it.
+   

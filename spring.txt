@@ -1,0 +1,255 @@
+Note:
+Spring MVC 4 example link in xml:
+http://websystique.com/springmvc/spring-4-mvc-helloworld-tutorial-full-example/
+--> if we are using any tag(like: mvc, tx or anything) in spring-context.xml or web.xml. to make it work, it is must to use prefix for that tag. else it throws, xml error
+
+--> if we will create a controller without using @RestController or @Controller and @ResponseBody 
+it will not work as REST service, means it will hit the resource method but response will not return to the client i.e. it will go through viewResolver.
+--------------------- ApplicationContext and WebapplicationContext -------------
+Q) common question arises is why would we need two different context configurations files and when these files are loaded by the 
+   spring container?
+Ans: ApplicationContext: applicationContext.xml is the root context configuration for every web application.
+                Spring loads applicationContext.xml file and creates the ApplicationContext for the whole application.
+            -> If you are not explicitly declaring the context configuration file name in web.xml using the contextConfigLocation param, Spring will search for the applicationContext.xml under WEB-INF folder and throw FileNotFoundException if it could not find this file.
+    WebApplicationContext: part from ApplicationContext, there can be multiple WebApplicationContext in a single web application.
+	       -> In simple words, each DispatcherServlet associated with single WebApplicationContext.
+		   -> xxx-servlet.xml file is specific to the DispatcherServlet and a web application can have more than one    
+		      DispatcherServlet configured to handle the requests.
+		   -> Spring will by default load file named “xxx-servlet.xml” from your webapps WEB-INF folder where xxx is the servlet 
+		      name in web.xml.
+		   -> If you want to change the name of that file name or change the location, add initi-param with 
+		      contextConfigLocation as param name.
+            
+================== Different type of scope available in Spring ===========
+-> scopes available in Spring: @Scope
+   1. Singleton  2. prototype 3. request 4. session 5. application 6. websocket
+
+------------------------ Different annotation we used here ----------------
+@Configuration, @Import, @Bean(initMethod="init",destroyMethod="destroy"), @Component, @Service, @Repository, @Controller, @Autowired (required=false),  @Profile, @Inject, @Resource, @Value, @ComponentScan,
+
+========== Autowire concept
+Most important thing to make @Autowired annotation work, code need to be added in controller in case it is not working :
+	@PostConstruct
+	public void init(){
+		System.out.println("this is init method called");
+		SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+	}
+-> @Autowired, @Inject, @Resource, and @Value annotations are handled by a Spring BeanPostProcessor implementations which in 
+   turn means that you cannot apply these annotations within your own BeanPostProcessor or BeanFactoryPostProcessor types (if any). These types must be 'wired up' explicitly via XML or using a Spring @Bean method.
+-> Spring also supports injection using the JSR-250 @Resource annotation on fields or bean property setter methods. This is a 
+   common pattern in Java EE 5 and 6, for example in JSF 1.2 managed beans or JAX-WS 2.0 endpoints. Spring supports this pattern for Spring-managed objects as well.
+->  Spring is capable of automatically resolving dependencies at runtime. This automatic resolution of bean dependencies is also called autowiring.
+-> There are 5 different types of autowiring modes (Note: there are two ways of dependecy injection(setter and constructor), this can be achieved in 5 ways or
+   mode):
+   1.‘no’: No autowiring at all. Bean references must be defined via  a ref element.
+   2.‘byName’: Autowiring by property name will look for a bean in container exactly the same name as the property which needs to be autowired.
+               Ex:
+			   <bean id="employee" class="com.howtodoinjava.demo.beans.EmployeeBean" autowire="byName">
+					<property name="fullName" value="Lokesh Gupta"/>
+			   </bean>
+			   <bean id="departmentBean" class="com.howtodoinjava.demo.beans.DepartmentBean" >
+					<property name="name" value="Human Resource" />
+				</bean>
+			   in the above example, property(departmentBean) of "employee object" will be automatically injected by the bean(spring will look for the match bean)
+				
+   3.‘byType’: Allow a property to be autowired if there is exactly one bean of the property type in the container. if there is more than one, fetal exception thrown
+			   Ex: same like above.
+   4.‘constructor’: this is analogous to byType, but applyied to constructor arguments
+			   Ex:
+			   <bean id="employee" class="com.howtodoinjava.autowire.constructor.EmployeeBean" autowire="constructor">
+				  <property name="fullName" value="Lokesh Gupta"/>
+			   </bean> 
+									OR
+				If you are not using autowire="constructor" in bean definition, then pass the constructor-arg as follow:
+				<bean id="employee" class="com.howtodoinjava.autowire.constructor.EmployeeBean">
+					<property name="fullName" value="Lokesh Gupta"/>
+					<constructor-arg>
+						<ref bean="department" />
+					</constructor-arg>
+				</bean>
+   5.‘autodetect’: choose a constructor or byType through introspection of the bean class. if default constructor is find, byType will be applied.
+   
+======  Making autowiring error safe using required=false
+-> you will need to make autowiring optional so that if no dependency is found, application should not throw any exception and autowiring should simpy be ignored.
+----> This can be done in two ways:
+1. If you want to make specific bean autowiring non-mandatory for a specific bean property, use required=”false” attribute in @Autowired annoration
+		@Autowired (required=false)
+		@Qualifier ("finance")
+		private DepartmentBean departmentBean;
+2. If you want to apply optional autowiring at global level i.e. for all properties in all beans; use below configuration setting.
+		<bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor">
+			<property name="requiredParameterValue" value="false" />
+		</bean>
+===== Excluding a bean from being available for autowiring
+-> If you want to exclude some bean definitions so that they can not be injected through autowiring mode, you can do this using ‘autowire-candidate’ set to false.
+		ex: <bean id="finance"      class="com.howtodoinjava.autowire.constructor.DepartmentBean" autowire-candidate="false">
+				<property name="name" value="Finance" />
+			</bean>   
+============ @Profile concept
+https://www.mkyong.com/spring/spring-profiles-example/           VVI
+https://javapapers.com/spring/profile-annotation-improvements-in-spring-4/
+-> In Spring 3.1, we can use the @Profile annotation only at the class level.
+   From Spring 4.0 onwards, we can use @Profile annotation at the class level and the method level.
+-> Spring @Profile allow developers to register beans by condition.
+-> Situation where we may need it:
+   For example, register beans based on what operating system (Windows, *nix) your application is running, or load a database properties file based on the application running in development, test, staging or production environment.
+-> Example: As we know, there is different databse used in different environment(dev and prod environment). So generally
+   we put multiple database datasource in the hibernate xml file and based on our use, we comment and uncomment it. and 
+   then we build it and deploy the war file. 
+   -> Here trouble is evertime we edit the xml file, we have to build it again and again. 
+   Solution: We can use @Profile annotation. In this case we define the bean for all enviroment here for dev and prod.
+      and activate the needed bean based on the environment. i.e what we were telling @Profile register the bean to the
+	  IOC of Spring conditionally. 
+   
+    @Configuration
+	public class EmployeeDataSourceConfig {
+		@Bean(name="dataSource")
+		@Profile("dev")                   // activated in dev environment 
+		public DataSource getDevDataSource() {
+			returnnew DevDatabaseUtil();
+		  }	
+		@Bean(name="dataSource")
+		@Profile("prod")                  // activated in prod environment 
+		public DataSource getProdDataSource() {
+			returnnew ProductionDatabaseUtil();
+		  }	
+	}
+	-> How will Spring know, in which environment application is deployed. There are two way to enable spring profile. 
+	1. via the system property like this:
+			System.setProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME, "dev");
+	 -> We can manually also enter this variable entry in the system varible or if we want to add this entry using code
+	    then we have to make sure this code get executed before bean instantiation happens.
+	 NOTE: AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME provided by spring only which IOC will read to enble the 
+	   profile.
+	2. For non-web application, you can enable a profile via the Spring context environment:
+	  AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+	  //Enable a "live" profile
+	  context.getEnvironment().setActiveProfiles("live");
+	  context.register(AppConfig.class);
+	  context.refresh();
+	  ((ConfigurableApplicationContext) context).close();
+	  -> AppConfig class is nothing but configuration file: 
+	    @Configuration
+		@EnableCaching
+		@ComponentScan({ "com.mkyong.*" })
+		public class AppConfig {
+		}
+
+===============================================================================================================
+Problem:
+Caused by: java.lang.ClassNotFoundException: org.springframework.web.servlet.DispatcherServlet
+Here are some steps you can take to deal with this error in Tomcat inside Eclipse IDE :
+
+1) If you are using Maven and if spring-webmvc is not added as a dependency in your project's pom.xml then please add that. Once you do that, build your project
+ using mvn install or mvn build. This will download spring MVC JAR files and another dependency.
+2) The second step is to add Maven Dependency into deployment assembly. This is required to move all dependent JAR files into WEB-INF/lib directory of Java web 
+  application.
+In order to add Maven Dependency into deployment assembly in Eclipse, follow below steps :
+i) Right-click your project, select properties and choose Deployment Assembly.
+
+Read more: http://javarevisited.blogspot.com/2015/09/eclipse-javalangclassnotfoundexception.html#ixzz52HIO0SpI
+===========================================================================================================
+Q) How to load spring-context.xml from the outside of the application?
+Ans: <context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>file:/full/path/to/context.xml</param-value>
+	 </context-param>
+	 
+	 load from class path:
+	 <context-param>
+	  <param-name>contextConfigLocation</param-name>
+	  <param-value>classpath:springContext*.xml</param-value>
+	</context-param>
+	
+Q) How to load external resource(xml file/properties file/text file/ image) in spring application?
+Ans: 
+	-> Resource is a general interface in Spring for representing an external resource. 
+	-> The resource loader’s getResource() method will decide which Resource implementation to instantiate according to the resource path.
+	-> your custom resource loader must implement either the ApplicationContextAware interface or the ResourceLoaderAware interface.
+	---> Loading resource file from application folder
+	     Resource banner = resourceLoader.getResource("file:data.txt");
+	---> Loading resource file from classpath
+		 Resource banner = resourceLoader.getResource("classpath:classpathdata.txt");
+	---> Loading resource file from file system
+		Resource banner = resourceLoader.getResource("file:c:/temp/filesystemdata.txt");
+	---> Resource banner = resourceLoader.getResource("//howtodoinjava.com/readme.txt");
+Q) How to get spring application context object reference?
+Ans:
+	<bean id="applicationContextProvder"
+                        class="com.java2novice.spring.ApplicationContextProvider"/>
+	ApplicationContextProvider appContext = new ApplicationContextProvider();
+	TestBean tb = appContext.getApplicationContext().getBean("testBean", TestBean.class);
+
+	package com.java2novice.spring;
+	import org.springframework.beans.BeansException;
+	import org.springframework.context.ApplicationContext;
+	import org.springframework.context.ApplicationContextAware;
+	public class ApplicationContextProvider implements ApplicationContextAware{
+		private static ApplicationContext context;
+		public ApplicationContext getApplicationContext() {
+			return context;
+		}
+		@Override
+		public void setApplicationContext(ApplicationContext ac)
+				throws BeansException {
+			context = ac;
+		}
+	}
+Q) How to read values from properties file?
+Ans: 
+	There are various ways to achieve the same,Below are some common used ways in spring-
+	1) Using PropertyPlaceholderConfigurer
+	2) Using PropertySource
+	3) Using ResourceBundleMessageSource
+	4) Using PropertiesFactoryBean
+Q) What are differences between two way of autowiring(setter and contructor)?
+Ans: Constructor injection: It is accomplished when the container invokes a class constructor with a number of 
+              arguments, each representing a dependency on other class.
+     Setter Injection: It is accomplished by the container calling setter methods on your beans after invoking a  
+	          no-argument constructor or no-argument static factory method to instantiate your bean.
+    -> If Object A and B are dependent each other i.e A is depends ob B and vice-versa. Spring throws ObjectCurrentlyInCreationException while creating objects of A and B bcz A object cannot be created until B is created and vice-versa. So spring can resolve circular dependencies through setter-injection. Objects constructed before setter methods invoked.
+Q) How Spring reponse if dependecy injection is cyclic in nature just like above explained?
+Ans: 
+Q) Is there a way to @Autowire a bean that requires constructor arguments?
+Ans: We can use the concept like @Producer used in CDI. Also one more option is there in spring. we can intialize the
+   constructor value with default value using @Value annotation.
+   @Component                                     @Component
+   public class ServiceMgr{                        public class DaoLayer{
+     @Autowired                                      public DaoLayer(@Value("default value")String str){}
+	 DaoLayer daoLayer;
+   }                                               }
+   NOTE: we can use default value paramter level also and we can read value from Systemvariable.
+   
+                                     OR
+   -> declare a bean class without any annotation
+		public class MyDAOBean {
+			@Override
+			public String toString() {
+				return "MyDAOBean"+this.hashCode();
+			}
+		}
+   -> declare this as bean class:
+        @Configuration
+		 public class MyAppConfiguration {
+			@Bean
+			public MyDAOBean getMyDAOBean() {
+				return new DaoLayer("Str value to initize");
+			}
+		 }
+   -> inject this bean in our bean as needed:
+        MyDAOBean myDAOBean = context.getBean(MyDAOBean.class); 
+		              OR
+		@Autorwired
+		MyDAOBean myDAOBean;
+Q) What is use of @Profile anotation in application?
+Q) Why do we need @Bean annotation in spring application?
+Ans: @Bean is a method-level annotation and a direct analog of the XML <bean/> element. The annotation supports most of the 
+   attributes offered by<bean/>, such as: init-method, destroy-method, autowiring, lazy-init, dependency-check, depends-on and scope.
+   Example:
+           @Configuration
+			public class AppConfig {
+			   @Bean(initMethod="init",destroyMethod="destroy")
+			   public MailService getMailService() {
+				  return new MailService();
+			   }
+			}

@@ -1,0 +1,125 @@
+--> Steps to add my repository to the git  
+	-> git init
+	-> git status
+	-> git add *
+	-> git commit -m "my first commit"
+	-> git remote add origin https://github.com/ravirohit/munsiji-root.git
+	-> git push origin master
+		  OR
+		-> git push --set-upstream origin master
+	-> username: ravirohit  //ravi.swd.rohit@gmail.com
+	-> password: XXXX#****
+-------------------------------------------
+Q) How can we which master repository my local repository is point at any moment?
+Ans: 
+--> git remote show origin
+Q) what is the meaning of the below command?
+git remote add origin https://github.com/ravirohit/react_route_link.
+Q) How can we undo the "git add" command?
+Ans:
+--> git reset filename.txt
+	Will remove a file named filename.txt from the current index, the "about to be committed" area, without changing anything else.
+-->	To undo "git add ."
+	"git reset"       (without using of dot)
+	
+Q) How to revert back the changes of commit related code in different situation?
+Ans: 
+--> case 1: Fix the last commit message.
+		  because of type, our last commit message is "git commit -m "Fxies bug #42"" want to fixes message to "Fixes bug #42".
+		  Solution is:
+		  Undo with: git commit --amend or git commit --amend -m "Fixes bug #42"
+	case 2: Reset "local" changes
+			You've made some commits locally (not yet pushed), but everything is terrible, you want to undo the last three commits—like they never happened
+			git reset <last good SHA> or 
+			git reset --hard <last good SHA>
+			git reset rewinds your repository's history all the way back to the specified SHA. By default, git reset preserves the working directory. The commits are gone, 
+			but the contents are still on disk. 
+			This is the safest option, but often, you'll want to "undo" the commits and the changes in one move—that's what --hard does.
+	 exampel:
+	 git reset 4ede9664122b801786430d31798120e496d615b3     <it will just reset the commit record but all file changes will be at it is> termed "unstaged"
+	 git reset --hard 4ede9664122b801786430d31798120e496d615b3 <it will take the code to particular head and it will update the file content as well>
+	 git reset --hard HEAD
+	 
+	case 3: Redo after undo "local"
+			You made some commits, did a git reset --hard to "undo" those changes (see above), and then realized: you want those changes back!
+			Undo with: 
+			git reflog and git reset or git checkout
+			
+Q) command to get SHA information for all the commit.
+Ans:
+>git show-ref
+4ede9664122b801786430d31798120e496d615b3 refs/heads/master
+72f47bb4a06ce0af6a66a832f09ea97496bb8699 refs/remotes/origin/master
+
+>git for-each-ref
+4ede9664122b801786430d31798120e496d615b3 commit refs/heads/master
+72f47bb4a06ce0af6a66a832f09ea97496bb8699 commit refs/remotes/origin/master
+Q) what is difference git checkout git revert git reset git clean?                        VVI
+    
+Q) what is difference between "git log --onlin" and "git reflog"?
+
+----------------------------------------------------- online learning ---------------------------------
+to see the log with hex info:  git log --all  --decorate --oneline --graph
+create the alias of the graph: alias graph="git log --all  --decorate --oneline --graph"
+command to create branch: git branch new_branc_name
+command to create a branch and checkout(short cut): git checkout -b "new_branch"
+to see all branch: git branch	
+command to see how many branch aviable and my head point/checkout to which branch: graph
+----------------------------------------------- checkout and work on branches
+move head pointer from master to created branch: git checkout branch_name
+can we use cat to see the file content on the selected branch in git??????????????????
+shot cut to perform both stage and commit the modified file:  git commit -a -m "auth for s1"
+--- There are different ways to merge branch to the master
+    1. Fast forward merge (if there is direct path is there between branch  need to be merged and master branch)
+	     A       B
+		 \      / <- there is direct path between B and master, so can use fast forward technique
+		   master <- head
+	
+	  
+	3. 3 ways merge (if there is not direct graph then need to use )
+	 once we will merge master with B branch, graph will appear like:
+	 A        B,master   <- B and master merged and head point to master branch, now if we want to merge master to A, then we have to use 3 ways merge technique
+	 \      /                as there is not direct path between master to A branch. it will happens vai commit point.
+	   commit-point
+	
+	
+Steps to merge branc.. assume we have three branch A, B, and Master. Right now i am on branch A and want to merge branch B with master.
+Steps: graph   -> will show how many branch and my head pointer point to which branch. i.e here on A
+Step: git checkout master  -> move head to master branch
+Step: git diff master..B   -> show all the changes will happens in master after merge with B branch
+Step: git merge B          -> merge branch B with Master and head will still point to Master
+Step: graph                -> will show the branch and as B merge with master branch. B branch is of no use
+Step: git branch --merged  -> which branch which is already merge to the master to the curret commit, after cross check now we can delete B branch
+Step: git branch -d B      -> will delete B branch
+Step: git branch -d A      -> will not delete the A branch if it is not merged with the master and throw message
+Step: git branch -D A      -> even A branch is not merged, it will be deleted forcefully by using -D instead -d
+
+Note: for 3 ways technique also, we use same ways for the merging like fast forward.
+
+----------------------------------- Merge Conflict resolve ----------------------------------------
+it will occur when we try to merge branches which occur due to change in same line of the same file
+-- i am on master branch and try to merge with branc A. 
+   git merge A .....
+-> it throws conflict
+-> git status
+   it will throws, we are in the middle of the conflict state not clean.... and error msg will be : "you have unmerged path"
+-> to go the previous state before the merge state, we can abort it using command: git merge --abort
+-> git status   --- it will show out of the merge process in clean area as earlier
+------   or if we want to resolve the conflict and then want to merge can be achieve like this:
+-> git merge A
+-> it will throw the conflict error msg.. open the conflicted file and fixed the changes/conflict
+-> add the changes in stage as: 
+   git add or git add <conflicted_file_name>
+-> now check: git status
+   it will says: all conflicts fixed but still in merging..... git commit to conclude the merging
+-> git commit ............. it will creat our merge commit.. whatever it will show in the screen.. do save and then exit.
+-> Now we can see the merge graph using command: graph.
+------- detached head
+
+     
+
+
+
+
+
+	

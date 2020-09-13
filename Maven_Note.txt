@@ -1,0 +1,286 @@
+Steps to create a maven project in modular.
+-> create a parent project A as a new maven project
+-> create a module B and project A project as parent
+-> do the same as 2nd to create C module
+-> whenever we create child module, this information is updated in the parent POM under <moudules> tag and in the created modules also with <parent> tag
+
+Note: Just as a best practice (unrelated to this question), modules B and C should not declare their own groupId and version; they should inherit these from the 
+parent (module A) POM. They still need to declare their own packaging and artifactId though.
+
+============================================================================================================
+Q)How to make one module depend on another module artifact?
+					OR
+Q) Maven - how to add a module in parent project's pom as dependency
+Ans: Each of your projects needs to have a pom.xml. The top-level project needs to have
+<modules>
+   <module>project1</module>
+   <module>project2</module>
+</modules>
+If project2 depends on project1, you need to define a <dependency/> to it inside project2's pom.xml.
+
+Q) importing xml files into springContext.xml from other maven projects.												(VVI)
+Ans: 
+<import resource="classpath:resources/beans-config.xml" />
+The XML file should be in WEB-INF/resources folder of the referenced module(1).
+Check out the note in Composing XML-based configuration metadata.
+Of course to be able to reference a classpath resource from another module, you have to add a dependency section in module 2's pom.xml like:
+    <dependency>
+        <groupId>module1.groupid</groupId>
+        <artifactId>module-1-artifact-id</artifactId>
+        <version>module1.version</version>
+    </dependency>
+Module 1 jar will be in classpath when module 2 app is run, or be packaged into war if module 2 is a webapp.
+
+Q) if we are adding multiple version of the same artifact in maven pom, which one will be reflected in the application?
+Ans: Maven take care of the dubplicate jar(jar with same artifactId and GroupId but different version), maven considered the jar with the latest version and 
+     ignore older one.
+Case 2: 
+	what if older and new version is having same GroupId but different ArtifactId in this case, Maven will consider the both version. then how can we 
+	exclude the older version
+Ans: it can be achieve in multiple ways:
+    we faced the above situation generally because of transitive dependecy issue, like Project B -> depends on -> Project C and Project A -> depends on -> Project B and not on the Project C then
+Way 1: in pom of Project B add like
+    <dependecy>
+	   <GroupId></GroupId>
+	   <artifactId>Project C </artifactId>
+	   <version>1.0</version>
+	   <optional>true</optional>      // it dont allow the transitive feature for this dependecy, will be added to the Project B, but will not transferred
+	</dependecy>
+Way 2: add the dependecy of Project C, without <optional> tag, in that case, wherever we want to exclude the dependecy, then in the pom of the Project A is
+	<dependecy>
+	   <GroupId></GroupId>
+	   <artifactId>Project B </artifactId>
+	   <version>1.0</version>
+	   <exclusions>
+	     <exclusion>
+		   <groupId></groupId>
+		   <artifactId>Project C</artifactId>
+		 </exclusion>
+	</dependecy>
+
+Q) importing of java file from one module jar to another module war in maven project is throwing classNotFoundException at build time.if we manually add the module jar file in the war file and run the server, it will run without any error but deploying from
+ eclipse it is throwing error(full publish to wildfly).
+ link: https://stackoverflow.com/questions/48231016/importing-of-java-file-from-one-module-to-another-module-in-maven-project-is-thr/54248616#54248616
+ Error:  
+ Caused by: java.lang.ClassNotFoundException: org.munsiji.hibernateUtil.HibernateCfg from [Module "deployment.munsiji-service.war:main" from Service Module Loader]
+Ans: actually the module which war file is generating, it's maven artifact type is "web". and another maven module whose jar file
+    is needed, maven artifact type is "web". as because of that, eclipse creating different folder structure in widlfly server,
+	as it is consider as web type module and not it require as jar.
+	-> to make it work fine while deploying from eclipse also, we have make the module maven artifact type as quickstart(for java
+	  project whose only jar is needed). then it will solve the issue.
+
+Q) Error: Description	Resource	Path	Location	Type
+JavaServer Faces 2.2 requires Dynamic Web Module 2.5 or newer.	cdiInjectionWebProj		line 1	Maven Java EE Configuration Problem.
+Solution: 
+
+Q) Error:
+	Java compiler level does not match the version of the installed Java project facet.
+Solution: 
+ -> way 1:
+   project right click -> properties -> project facet -> under java increase it from 1.6 to 1.8
+   project right click -> properties -> project facet -> under "dynamic web module" increase it from 2.5 or 3.0 as needed
+   Note: while changing the dynamic module, it will throw error can't be changed, so select the server version 
+         (wildfly 8.x or 10.x as needed) then from the top under the custom drop down, changes from drop down list, then we
+		 would be able to change the facets version.
+ -> way 2: 
+   -> Another way is to edit the project facet configuration file itself: org.eclipse.wst.common.project.facet.core.xml
+      -> You'll find this file in the .settings directory within the Eclipse project.
+   -> Change the dynamic web module version in this line to 3.0 - <installed facet="jst.web" version="2.5"/>
+   -> Select Maven » Update Project (or press Alt+F5)
+  Note: make sure, we have updated the web.xml file accordingly which is version="3.0".
+   
+
+
+	  
+=================== Maven ===============
+Q) How to override repository url define in the setting.xml with the url written in pom.xml
+Ans: as of now, it should be written in separete setting.xml and link it to the project build.
+
+Q) How can we create separate local maven repository apart from c:\usr\ravi\.m2\repository
+Ans: STEP 1:
+   create a .m2/repository folder wherever we are interested here at loc: "C:\Project_Work\Other_learn\.m2/repository" then in 
+   the setting.xml add the following line:
+    <localRepository>C:\Project_Work\Other_learn\.m2\repository</localRepository>
+   STEP 2:
+      add this location to the build path: 
+	  window -> preference -> java -> build-path -> class-path -> add a new class_path location what we have created.
+Q) Sometime our jar/war file doesn't contain all the maven dependency and it throw exception while deployment on the server.
+   reason: maven dependency is not deploying to the server.
+Ans: there are few places need to be checked:
+   1. right click on the project -> properties -> Deployment Assembly -> add " maven dependency"
+   2. right click on the project -> properties -> java build path -> check the maven dependency or any which is required but not checked
+   
+Q) Cannot create Maven Project in eclipse with following error:
+   Error: Could not resolve archetype org.apache.maven.archetypes:maven-archetype-quickstart:1.1 from any of the configured repositories.
+Ans: For me the solution was a bit simpler, I just had to clean the repository : .m2/repository/org/apache/maven/archetypes
+
+Q) Weired behavior:
+   I have created a maven project A and a sub maven module B and C. archetype of both module is maven.*.web only. C is added to B 
+   pom as a dependecy. packaging type of B is war and C is jar as it is being added to B and finally war file of B is deployed to 
+   the wildfly server.
+   Error: in eclipse i am buidling the the root A as "clean package". then publishing the B maven module to the server in 
+   eclipse "server" tab. When i started the server, it is throwing error ClassNotFound for all class which is referred to the C 
+   Maven module.
+   instead of publish the the B moudle to the server using eclipse, if we will copy to the war file to the deployment folder of
+   the wildfly server and started it. this time it will not throw error. 
+Explanation:
+  in both the cases war file will have the C jar file. but folder structure of the C jar file will be little bit different if 
+  will check in the deployment folder of wildfly server for the cases: manually putting the war file and publishing the war file
+  from eclipse console.
+Reason: This is happening because the web archetype of the maven module C. if we will create the jar file, it will not take the 
+  web.xml file in count. and will have the folder structure as needed.
+  while if we will publishing the war file from eclipse console, there web.xml file is getting in count and C maven module is consider as web type module which is leading to create a different kind of folder structure in the wildfly deployment folder.
+Solution: Make sure to make the B maven module to keep archetype as web and other dependency maven module to 
+  maven.archetype.quickstart which doesn't have web.xml and will not create confusion while publishing in the eclipse UI.
+  
+Q) Differences between dependencyManagement and dependencies in Maven?
+Ans:Dependency Management allows to consolidate and centralize the management of dependency versions without adding dependencies which are inherited by all children. This is especially useful when you have a set of projects (i.e. more than one) that inherits a common parent.
+
+Q) what is the use of type tag in the maven dependency tag?
+Ans: 
+-> By default (and the common usage) a project would consume jars as dependency and in rare cases where it generates artifacts to be pushed back into a public/private repository, it will be also in a jar format (type).
+-> However, in some projects there are needs for more advanced build lifecycle, hence, the developers write code (and use plugins) to modify the default behavior and in such cases there might be a need for different type usage. like: war, ear, pom etc.
+   
+Q) How to use Type type POMs as a dependency in Maven?
+Ans: if we have a pom file and want to add all the dependency in that pom file in our child class maven or any maven, then we can add that pom as dependecy and type would be pom.
+Ex: 
+  there is one pom having many dependecy and pom infor will be as:
+  <groupId>com.mycompany</groupId>
+    <artifactId>mail-deps</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+-> now to take all the dependency from that pom file we can use in my project as:
+  <dependencies>
+     <dependency>
+         <groupId>com.mycompany</groupId>
+         <artifactId>mail-deps</artifactId>
+         <version>1.0.0</version>
+         <type>pom</type>
+		 <scope>import</scope>
+     </dependency>
+ </dependencies>
+ 
+Q) Why manually added jar file to the maven project is not throwing compile time error. but when i am trying to 
+   to clean package build it is throwing package or class not found error?
+					OR
+   Maven build fails, because it does not recognize a .jar added to the build path.
+   Link: https://stackoverflow.com/questions/53503134/servlet-package-is-not-available-while-building-of-servlet-api-and-throwing-comp/54284042#54284042
+Ans: 
+   REASON: Manually adding a library to Eclipse's build path does not automatically add it the maven build generated file. that file will be added only if it is loaded through adding it's dependency in the pom file.
+   So here we need to do two steps, first we copy the jar file to the maven local repository and then add it's 
+   dependency in the pom.xml file as follow:
+   Solution 1: Using system dependency:
+			<dependencies>
+			  <dependency>
+				<groupId>com.example</groupId>
+				<artifactId>evalpostfix</artifactId>
+				<version>1.0</version>
+				<scope>system</scope>
+				<systemPath>${basedir}/lib/evalpostfix-1.0.jar</systemPath>
+			  </dependency>
+			</dependencies>
+    Solution 2: Installing jar into local Maven repository
+	          <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.4</version>
+				<executions>
+					<execution>
+						<id>javaee-api-id</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>install-file</goal>                // copy file to local maven repo
+						</goals>
+						<configuration>
+							<packaging>jar</packaging>
+							<groupId>org.glassfish.main</groupId>
+							<artifactId>javaee-api</artifactId>
+							<version>4.0.0</version>
+							<file>${project.basedir}/lib/javaee-api-8.0.jar</file>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			-> and then add dependency :
+			<dependency>
+				<groupId>org.glassfish.main</groupId>
+				<artifactId>javaee-api</artifactId>
+				<version>4.0.0</version>
+			</dependency>
+			Note: we get the artifact info of the jar file after opening it using 7 zip and open the pom.xml which will have 
+			requie info.
+			
+Q)  error: 
+	Description Resource Path Location Type Cannot change version of project facet Dynamic Web Module to 2.4.
+Ans: Error is because wrong version in <web-app> tag in web.xml. to fix it, we have to provide the right version
+    and do the maven update project this error will go.
+	Ex i did it from 2.4 to 2.5 or we can take the ref from other web.xml from the same project sub module: 
+	<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+Q) Error: 
+	-> There will be no any compilation error but at the time of maven build maven project does not support java 8 features.
+	error: lambda expressions are not supported in -source 1.7
+Ans:
+-> By default, Maven assumes you wrote your code using JDK 1.7(from pom.xml of the module) and that you want to compile to that same target. You will need to add the maven-compiler-plugin to your build plugins, in order to tell it to use 1.8.
+Pease do the following code changes in the pom.xml:
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.3</version>
+            <configuration>
+                <source>1.8</source>
+                <target>1.8</target>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+
+Q) Difference between maven scope compile and provided for JAR packaging.
+Ans:
+Compile:
+	This is the default scope, used if none is specified. Compile dependencies are available in all classpaths of a project. Furthermore, those dependencies are propagated to dependent projects.
+Provided:
+	This is much like compile, but indicates you expect the JDK or a container to provide the dependency at runtime. For example, when building a web application for the Java Enterprise Edition, you would set the dependency on the Servlet API and related Java EE APIs to scope provided because the web container provides those classes. This scope is only available on the compilation and test classpath, and is not transitive.
+	                                       OR
+-> Compile means that you need the JAR for compiling and running the app. For a web application, as an example, the JAR 
+   will be placed in the WEB-INF/lib directory.
+-> Provided means that you need the JAR for compiling, but at run time there is already a JAR provided by the 
+   environment so you don't need it packaged with your app. For a web app, this means that the JAR file will not be placed into the WEB-INF/lib directory.
+   
+Q) How to disable subdeployment class loader isolation within a ear?
+Ans: add  <ear-subdeployments-isolated>false</ear-subdeployments-isolated>  in jboss-deployment-descriptor.xml file.
+   explnation: 
+        Subdeployment class loader isolation will now be disabled for this EAR deployment. This means that the subdeployments of the EAR will have automatic dependencies on each of the non-WAR subdeployments.
+Q) What is difference between <dependencyManagement> and <dependencies> tag in pom.xml?
+Q) explain about classifier and <scope>test</scope> in pom.xml.
+
+Q) How to resolve the issue if we are getting below error while building the application:
+   [WARNING] Rule 0: org.apache.maven.plugins.enforcer.BannedRepositories failed with message:
+	Current maven session contains banned repository urls, please double check your pom or settings.xml:
+	hp.central - http://apgpro.in.rdlabs.hpecorp.net/nexus/content/groups/public
+	Current maven session contains banned plugin repository urls, please double check your pom or settings.xml:
+	hp.central - http://apgpro.in.rdlabs.hpecorp.net/nexus/content/groups/public 
+Ans: update the all settings.xml file from http to https url.
+Q) this is follow up question from the previous one. if you have udpated the settings.xml file with https and geting 
+   ERROR:
+    "sun.security.validator.ValidatorException: PKIX path building failed: sun.security.provider.certpath.SunCertPathBuilderException: unable to find valid certification path to requested target"
+Ans:  prblm here is public certificate is not store in the truststore file of JVM. So it can't communicate with the 
+      server using https. 
+   - open the central repo in browser(https://apgpro.in.rdlabs.hpecorp.net/nexus/content/groups/public/). and follow 
+     below steps to export the certificate in the file:
+     chrome -> click on site icon left to address in address bar, select "Certificate" -> "Details" -> "Copy to File..." -> next -> save in format "Der-encoded binary, single certificate" -> exported file "hpemavenrepocert.cer"
+   - Now we have file with keystore and we have to add it to our JVM. Determine location of cacerts files, eg.  
+     C:\Program Files\Java\jdk1.8.0_161\jre\lib\security\cacerts
+   - Next import the hpemavenrepocert.cer file into cacerts using command line:
+     - open cmd as Administrator and run below command:
+     C:\WINDOWS\system32>"C:\Program Files\Java\jdk1.8.0_161\bin\keytool" -import -alias example -keystore "C:\Program Files\Java\jdk1.8.0_161\jre\lib\security\cacerts" -file "C:\Users\raviro\Desktop\hpemavenrepocert.cer"
+    NOTE: You will be asked for password which default is "changeit"
+   - restart JVM or eclipse, it will work fine.
+  Ref link: https://stackoverflow.com/questions/21076179/pkix-path-building-failed-and-unable-to-find-valid-certification-path-to-requ
+
+		
+
+		

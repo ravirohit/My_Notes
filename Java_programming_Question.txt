@@ -1,0 +1,27 @@
+-> three number from array whole value is x
+-> divide the input array into 3 groups such that their sum difference is minimum.
+-> simple program for singleton class. // what is critical section in it.
+-> write a java programme to create a memory leak.
+
+---------------- Tree ----------
+-> Check if Two Binary Trees are identical?
+-> Given a number. find the closest of it in the binary search tree.
+-> Find Kth smallest element in BST(Binary Search Tree)?
+-> How to print vertical sum of binary tree?
+-> common question, technique to traverse the Binary tree:
+   PreOrder, InOrder, PostOrder
+-> https://www.techiedelight.com/maximize-value-of-the-expression/
+-> check if string matches with given wildcard string pattern
+-> Rearrange the array with alternate high and low elements 
+-> Determine if binary is BST or not
+-> find the distance between given pairs of node in binary tree
+-> check if binary tree is symmetric or not
+-> print bottom view and left view of binary tree   // this two different question
+-> Maximum difference between two elements where larger element appears after the smaller element 
+   // i think aapne kiya hai... in case you want to have a look...
+   
+
+   
+---------------- List ----------------
+-> algo to find if linkedlist is having loop in it or not.
+-> How to find middle element of linked list in one loop?

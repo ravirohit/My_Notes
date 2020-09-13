@@ -1,0 +1,32 @@
+-- http://collabedit.com/wgqsy :- for grooming purpose
+
+--------------------------- Of Use ----------------------
+-> stream work based on hashcode() and equal() method to process on the collection object.
+   So, if we want to implement stream on custom class then we have to override both method else it will not
+   work fine.
+-> Java CompletableFuture and how it provides new feature in the java 8 which is not provided earlier.
+   https://www.callicoder.com/java-8-completablefuture-tutorial/
+   
+
+-------------------------- Q&A ----------------------
+Q) What are the new feature in Java 8?
+Ans:
+-> forEach(new Consumer()-> {}) method
+-> static and default method in the interface
+-> lambda function -> used particularly in the functional interface
+-> for DateTime
+
+Q) does interface cause the diamond problem due to implemented method?
+Ans:
+   It doesn't. becuase if multiple interface has implemented in that case, implemented class should also have to override that.
+
+Q) How to iterate through map?
+Ans:
+map.forEach((k, v) -> System.out.println((k + ":" + v)));
+Error;
+ error: lambda expressions are not supported in -source 1.7 :- this error is because of maven error.
+ 
+ Q) Filter a single element from the list.
+ Ans: messagingSessions.stream().filter(p -> p.getName().equals(sessionName)).findFirst().orElse(null);
+ Q) remove few object from list based on some condition.
+ Ans: messagingSessions.removeIf(p -> p.getName().equals(sessionName));

@@ -1,0 +1,11 @@
+--- 
+-> print 1 to 10 in sql query command:
+   > select rownum from dual where rownum <= 10;            // but same will not work in mysql
+
+
+
+
+
+-------- Need to observed ------------------
+-> insert into  sys.person values(2,'Arul',STR_TO_DATE('15-SEPT-2014','%d-%M-%Y'));
+-> select * from sys.person p, sys.reminders rm where p.LastUpdateDate < (str_to_date('10-Dec-2014','%d-%M-%Y')-interval 2 month ) and p.personId = rm.personId and rm.ReminderDate not in( select r.ReminderDate from sys.reminders r where r.ReminderDate < str_to_date('10-Dec-2014','%d-%M-%Y')-interval 3 month);

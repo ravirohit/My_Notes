@@ -1,0 +1,190 @@
+-> Finally ALWAYS gets executed, no matter what happens in the try or catch block (fail, return, exception, finish etc.).
+   except system.exit(0)  and fetal failure.
+
+Some interview question: 
+
+----------- few latest question --------
+-> Explain about trustkey and keystore in java certification concept.
+-> Thread.currentThread().getContextClassLoader();     // thread context loader ??
+	Thread.currentThread().setContextClassLoader(slClassLoader); 
+  https://docs.oracle.com/javase/jndi/tutorial/beyond/misc/classloader.html
+	private Lock deliveryLock = new ReentrantLock();
+-> What is best way to create custom listener for the operation in Java... //you probably want to look into the observer pattern.
+    https://en.wikipedia.org/wiki/Observer_pattern
+-> How can we have multiple class loader in our application. example
+-> Class Proxy in java
+   featureSession instanceof Proxy
+-> asynchronous servlet and asynchronous rest api
+-> increase the number of thread to handle request in wildfly
+https://dzone.com/articles/wildfly-8x-control-maximum-number-of-connections-t
+
+
+----------------- Java -----------------
+-> hierarchical diagram for collection 
+-> what is difference between fail fast and fail safe iterator?
+-> How HashTable or concurrentHashmap are different functionality wise?
+-> How internal implemenation of Treemap is different than HashMap or Linkedhashmap
+-> difference between Enumeration and Iterator.
+
+-> does overriding hashcode() method has any performance implication.
+-> create immutable class and does all property of immutable class need to be final.
+-> simple program for singleton class. // what is critical section in it.
+
+-> few method: wait(), sleep(), yeild(), join(), notify() and notifyAll(), 
+-> synchronization at class level and object level. 
+-> overview about the concurrent package.
+
+-> simple code using Lambda expression (it is combination of functional interface and arrow operator).
+-> Why should we use lambda expression?
+   Enable to treat functionality as a method argument, or code as data.
+   A function that can be created without belonging to any class.
+   A lambda expression can be passed around as if it was an object and executed on demand.
+-> difference between interface in java 8 and earlier version. follow up question, interface in java doesn't lead to 
+   diamond problem why.
+                               OR
+   default and static methods in Interfaces in java 8.
+   
+-> how memory are designed by JVM to store data.
+-> few design pattern provided by java.
+-> Clone concept in java. // shallow copy and and deep copy
+-> Serialization and deserialization in java.-> 
+-> what new concept has been introduced in java8 to avoid nullpointer exception?  // Optional object
+-> design pattern used by String pool constant. // flyweight design pattern
+-> What design pattern is used to implement Listerner functionality in code?    // observer design pattern
+-> JVM uses lazy class loading or eager?
+         OR
+-> what is dynamic class loading and lazy class loading?
+   Ans: In fact, the JVM uses lazy loading all the time, also for the classes from the core API.
+-> write a java programme to create a memory leak.
+-> How to check in the given programme, a reference variable is eligible for garbage collection?
+-> what is difference between instance method static method?
+Ans:1. Instance methods require an instance before they can be invoked, whereas class methods do not.
+    2. Instance methods use dynamic (late) binding, whereas class methods use static (early) binding.
+-> What is difference between synchronized and volatile variable and atomic variable?
+Ans: Java’s synchronized keyword guarantees both mutual exclusion and visibility.
+  -> Remember volatile is not a replacement of synchronized keyword but can be used as an alternative in certain cases. 
+  -> Since volatile keyword in Java only synchronizes the value of one variable between Thread memory and "main" memory while synchronized synchronizes the value of all variable between thread memory and "main" memory.
+  -> You can not synchronize on the null object but your volatile variable in Java could be null.
+   Example: 
+     public class Singleton { 
+		private static volatile Singleton _instance;
+		static Singleton getInstance() {
+			if(_instance == null) {
+				synchronized(Singleton.class) { 
+					if(_instance == null) _instance = new Singleton();
+				} 
+			} 
+		 return _instance; 
+		}
+	}
+-> difference between stackoutofflow error heapoutofmemory error?
+
+--------------------- JAVA 8 ----------------
+-> what is nashorn in java8?  // new javascript processing engine earlier it was Mozilla Rhino 
+-> what is jjs?               // executable or command line tool used to execute javascript code at the console.
+-> What is stream?
+-> What is the difference between intermediate and terminal operations?
+-> What is the difference between map and flatMap stream operation?
+-> What is stream pipelining in Java 8?
+-> what is CompletableFuture and it's uses?
+--------------------- String ---------------
+-> Why character array is better than String for storing password in Java
+-> program to find the first non repeated character in the String?
+-> program to remove the duplicate word from the string.
+-> java program to reverse each word of a given string?
+-> How to remove all extra white-spaces in the String?
+-> to check whether two given strings are anagram.
+-> How does substring() method works in java? how does it cause memory leak.
+Ans: which is fixed in substring implementation of Java 7.
+-> follow up question, Do you know how substring works in Java? wrt java 6 and java 7 as well.
+
+-> Why Char array is preferred over String for storing password?
+-> What would be the output of below code and how:
+		String s = null;
+		s = s + "hello";
+		System.out.println(s); // prints "nullhello"
+   -> modifid code by compiler:
+		String s = null;
+		s = new StrinBuilder(String.valueOf(s)).append("hello").toString();
+-> What would be the output of the following code:
+		String str = "123";
+		String subStr1 = str.subString(0,0);
+		String subStr2 = str.subString(str.length(),str.length());
+-> Why is String immutable in java ?
+   Ans: There are various reasons to make String immutable in java.
+	1. Security :  String is made immutable to help increase the Security. Sensitive data like username,password can be stored as the Strings can't be modified once created.
+	2. Class loading : String objects are used for Class loading. It is possible that wrong class has been loaded in the JVM, if the String is mutable i.e modifiable.
+	3. Thread Safe : Immutable Strings are thread-safe. Synchronization is not required when we use them in the multi-threading environment.
+-> pro-gramme to check how strong is password in java or to validate the password entry.
+-> How string is handle internally by java?
+-> Why do we provide charString while creating bytearray out of String?
+   Example:
+       byte[] byteArray = str.getBytes("utf-8");
+-> How to convert byteArray or String to hexadecimal value?
+-> write a programme to convert a String to hexadecimal ASCII Value?
+   https://www.geeksforgeeks.org/convert-a-string-to-hexadecimal-ascii-values/
+-> 
+
+
+---------------- Design pattern -----------
+-> what design pattern is used by java String Constant pool?       // Flyweight Design pattern
+-> what are the design pattern used by java?
+-> what are the design pattern used by j2ee?
+-> what are the design pattern used by hibernate?
+-> what are the design pattern used by spring?
+
+----------------- wildfly deployment ------------
+-> How can we deploy multiple application in the same JVM because in the server?
+   Hint: it has different class loader. also, wildfly use the concept of module for each deployed application.
+-> How to install SSL in wildfly server?
+
+
+================= Exception ==================
+-> what is partially checked exception?
+-> define below term and when it is needed?
+   Checked Exception(partially and fully), unchecked exception. 
+   Note: it is must to handle checked exception while it is optional for unchecked exception.
+   Hint: create checked exception when, Exception is predictable or it is avoidable.
+-> why ClassNotFoundException is checked exception?
+Ans: The ClassNotFoundException is checked exception so that we can give different implementation if we get any exception in loading class using reflection (Eg: ClassLoader.loadClass(className) ). In most of the cases, this exception come when we use the method Class.forname.
+-> ClassNotFoundException Vs NoClassDefFoundError Vs ExceptionInInitializerError.
+Ans: ClassNotFoundException: It is checked exception.
+-> Difference between catch and finally in Java
+-> Differene between NoSuchMethodException and NoSuchMethodError?
+   NoSuchMethodException: It happens when we invoke the method using reflection.
+   NoSuchMethodError: When we invoke the method but it is not available at run time due to conflict in the jar version.
+-> What do you understand the term Reflection in java?
+Ans: 
+				 
+				 
+=============== class loading ===============
+https://medium.com/@swayamraina/class-loading-in-java-8167fe43d54f
+-> Explain the whole process how class is loaded till execution by the JVM in java?         VVI
+-> what are the different type of class loader available in Java?
+-> what are the different ways to load class?
+Ans: A class can be loaded using one of the following methods:
+	-> The forName method that resides inside the Class class.
+	-> The findSystemClass method that resides inside the ClassLoader class.
+	-> The loadClass method that resides inside the ClassLoader class.
+-> How class loading in jboss is different than by class loader of JVM?
+-> does class initialized at the time of loading in java?   // no
+
+==================== Thread Multithreading =======================
+-> Write a class definition where multiple thread is storing\reading data without affecting each other. 
+And: Hint implemenation of ThreadLocal class:
+	   public void set(T value) {
+			Thread t = Thread.currentThread();
+			ThreadLocalMap map = getMap(t);
+			if (map != null)
+				map.set(this, value);
+			else
+				createMap(t, value);
+	  }
+=========================== GC ==============================
+Q) what is the purpose of finalize() method or why do we override it? How it is different from finally block.
+   who will call overriddent finalize() method?
+Q) What is Object Resurrection? and where can we use it?
+
+=========================== Hibernate ====================
+Q) can we provide multiple entity variable with @Id annotation?
+

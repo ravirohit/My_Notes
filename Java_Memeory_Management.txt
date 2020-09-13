@@ -1,0 +1,182 @@
+TODO 
+GC:  More detail on various garbage collection techniques, and the data that is required by each of them, is given in Chapter 9, "Garbage Collection."   // https://www.artima.com/insidejvm/ed2/jvm6.html
+
+Stack: https://www.artima.com/insidejvm/ed2/jvm8.html
+
+------ different version different memory feature:
+-> In java 6 intern() string was used to be the part of PermGen. 
+   In Java 7 String literals are in the heap not in PermGen
+-> In java 8,PermGen has been replaced with Metaspace. and Metasapce is not part of Heap. it comes under Native memory.
+   Native Memory: It is memory which is under the control of the OS.
+-> heap dump is stored in a binary format called HPROF. 
+
+=========================== of use ==================
+-> different memory area available based on stored content:
+   1. Method area(Class area)  2. Heap area 3. Thread Stack area  4. Native method stack/area 5. PC Registers
+-> different section of memory available based on the object lifetime and how GC is collecting it.
+-> Churn Rate and High Transactional Memory Usage:         
+    https://www.dynatrace.com/resources/ebooks/javabook/other-java-memory-issues/
+ -> churn Rate: The churn rate describes the number of allocations of temporary objects per transaction or time slice.
+    -> high concurrency and high throughput quickly lead to churn rates beyond what the JVM can sustain. 
+       Exampel: a single Transaction might need at least 5MB memory and creates 1000 temporary objects. so,
+	    100 concurrent Transactions at 5 MB = 500 MB) is beyond the capacity of the young generation, temporary objects will be tenured to the old generation
+    -> A high churn rate alone will slow down the applications because the JVM needs to execute young-generation GCs 
+	   more frequently. 
+	-> If the transactional memory usage exceeds the young generation's capacity (as described earlier), objects are 
+	   tenured prematurely and the old generation will grow. This then leads to more-frequent old-generation GCs, further hurting performance.
+    -> The tricky part is that the out-of-memory error will abort all running transactions and the subsequent GC will 
+	   remove the root cause from memory.
+	-> Solution:
+	   -> Do a thorough allocation analysis to bring down the churn rate
+	   -> Take several heap dumps under full load. Analyze how much memory a single transaction keeps alive and try to 
+	      bring that down. The more concurrency you expect in your production system to less memory a single transaction should use.
+	   -> Make sure you follow up your optimizations with a young-generation-sizing exercise and extensive load testing
+   
+================ Q&A ====================
+-> Where are static methods and static variables stored in Java?
+Ans: Static methods (in fact all methods) as well as static variables are stored in the PermGen section of the heap, 
+    since they are part of the reflection data (class related data, not instance related).
+	-> Constant pools of a class will be stored inside method area. 
+   explanation:
+     static int i = 1; //the value 1 is stored in the permgen section
+     static Object o = new SomeObject(); // the reference(pointer) is stored in the permgen section, and the object 
+	                                     // instance is stored in heap memory(youn/old or suvivor space).
+Q) Does Permgen is part of heap memory?
+Ans: nope.. somewhere it is written yes for Java < 8
+Q) Write a java programme to cause memory leak.
+Q) write a java programme to cause outOfMemoryError and StackOverflowError.	
+Q) JVM has four types of GC implementations:
+	1. Serial Garbage Collector 2. Parallel Garbage Collector 3. CMS Garbage Collector 4. G1 Garbage Collector
+Q) What is difference between "Memory area" and "Perm Gen" Memory?
+Ans: the "Method Area" a subset of "PermGen", as the permanent generation space does hold class defintions.
+  -> Memory area and Native area are part of PermGen.
+Q) What is a PermGen Leak? 
+Q) What are the different kind of references available in Java, this is with respect to GC?
+Ans: Strong, soft, weak and panthom
+Q) What is difference between Heap Memory and Native Memory?
+Ans; Heap Memory: it is controlled/limited or limited by JVM.
+    Native Memory: it is controlled/limited by Host operating system.
+Q) Difference between Java8 Memory and pre-java7 Memory?
+Ans: http://karunsubramanian.com/websphere/one-important-change-in-memory-management-in-java-8/
+Q) Java Primitive data type store in Stack or Heap?
+Ans: Local variables and method arguments fit this criterion; if they are primitives, the actual value will be on the stack, and 
+  if they are objects, a reference to the object (but not the object itself) will be on the stack.
+  -> Even if you variables will be stored on the heap, Java will still load their values on the stack when it needs to act upon 
+     them. That is the way JVM works - it is a stack language.
+Q) Where are static methods and static variables stored in Java?
+Ans: Static methods (in fact all methods) as well as static variables are stored in the PermGen section of the heap, since they 
+   are part of the reflection data (class related data, not instance related).
+   -> Exceptions: interal objects like classes stored in PermGen
+  
+
+
+
+
+
+=========== yet to segregate
+Q) Where does String Pool resides in memory?
+Ans: From java 7 String pool is a storage area in java heap memory, where all the other objects are created. 
+  Prior to Java 7 String pool was created in permgen space of heap.
+Q) What is difference between constant pool and String pool(String entern pool)?
+Ans: Constant pool: The constant pool is a table of structures which represents various, class and interface names, 
+   field names, string constants and other constants that are referred to within the ClassFile structure and its substructures.
+Q) how the GC keep the record if the Object is reference or not?
+Ans: 
+Q) What are the different type reference based on GC?
+Ans: https://dzone.com/articles/java-garbage-collector-and-reference-objects
+   
+   
+   
+===================== information which need to be segregated =========
+-> in java 7, there is permGen memory which is part of Heap. while in Java8 PermGen has been removed and replaced with 
+   Metaspace which is not part of Heap but part of Native Memory.
+   -> Why we removed the Permgen with Metaspace in java8?
+   Ans:1. It is very hard to predict the required  size of PERMGEN.
+       2. It helps in improving Garbage Collection Performance and Class data-de allocation.
+	   3. The good news is that it means no more java.lang.OutOfMemoryError: PermGen space problems and no need for you 
+	      to tune and monitor this memory space anymore…not so fast.
+     -> There is disadvantage also:
+	   1. It is critical that you add the new option -XX:MaxMetaspaceSize  which sets the Maximum Metaspace size for 
+	      your application.
+	   2. no longer sufficient to just monitor the Heap Size. 
+	   3. must also monitor the Metaspace which you can do by just keeping an eye on the ‘process size’ using your 
+	      Operating System utilities (Example: ‘top’ in Unix/Linux, ‘Task Manager’ in Windows).
+	  ->  The issue is, if your application loads lots of classes (and/or interned strings), you may actually bring down the Entire Server (not just your application). Why ? Because the native memory is only limited by the Operating System. This means you can literally take up all the memory on the Server. Not good.
+-> Static methods and variables have been Stored in the PERMGEN space before the 8th version of the java.
+   static int i = 1; //the value 1 is stored in the permgen section
+   static Object o = new SomeObject(); //the reference(pointer/memory address) is stored in the permgen section, the 
+                                       // object itself is not.
+-> METASPACE now this is the place where all those name and fields of the class, methods of a class with the bytecode 
+   of the methods, constant pool, JIT optimizations  etc are stored.
+   -> Metaspace capacity
+	 -> By default class metadata allocation is limited by the amount of available native memory (capacity will of course depend if you use a 32-bit JVM vs. 64-bit along with OS virtual memory availability).
+     -> A new flag is available (MaxMetaspaceSize), allowing you to limit the amount of native memory used for class metadata. If you don’t specify this flag, the Metaspace will dynamically re-size depending of the application demand at runtime.
+  -> Metaspace garbage collection
+	 -> Garbage collection of the dead classes and classloaders is triggered once the class metadata usage reaches the  
+	    “MaxMetaspaceSize”(-XX:MaxMetaspaceSize).
+	 -> Proper monitoring & tuning of the Metaspace will obviously be required in order to limit the frequency or delay 
+	    of such garbage collections. Excessive Metaspace garbage collections may be a symptom of classes, classloaders memory leak or inadequate sizing for your application.
+-> Method Area is subset of Permgen memory.
+-> Classes loaded by classloader and static variables and static object references are stored in a special location in 
+   heap which permanent generation.
+   -> static fields are associated with the class, not an individual instance.
+   -> static fields are cleaned up when the ClassLoader which hold the class unloaded. In many simple programs, that is never.
+-> Local primitive variables, local object references and method parameters are stored in Stack.
+-> Local Functions (methods) are stored in stack but Static functions(methods) goes in permanent storage.
+-> All the information related to a class like name of the class, Object arrays asscociated with the class, internal objects used by JVM (like java/lang/Object) and optimization information goes into the Permanent Generation area.
+
+
+-> when an object is referenced by garbage collection:
+   1. Any instances that cannot be reached by a live thread.
+   2. Circularly referenced instances that cannot be reached by any other instances.
+      Example: Cyclic dependencies are not counted as the reference so if object A has a reference to object B and object B has a reference to Object A and they don't have any other live reference then both Objects A and B will be eligible for Garbage collection.
+   3. If an object has only lived weak references via WeakHashMap it will be eligible for garbage collection.
+   4. The object is created inside a block and reference goes out scope once control exit that block.
+   
+-> explain which all component will be allocated to which part of memory:
+   1. class MyClass{
+        static int i = 10;                      // stored in metaspace/permgen
+		static MyClass obj = new MyClass();     // reference will go to the metaspace/permgen and object goes to heap
+		public void display(String abc){        // method information will be store in metaspace/permgen while arg will 
+		    return obj;                         // go to the stack memory 
+		}
+		static public void display(String abc){  // 
+		    return obj; 
+		}
+      }
+
+-> No. Methods are not garbage collected because they don't exist in the heap in the first place.
+   Static variables belong to the Class instance and will not be garbage collected once loaded 
+   
+====================== JVM thorough 
+https://www.artima.com/insidejvm/ed2/jvm6.html
+-> references to objects can exist in many places--Java Stacks, the heap, the method area, native method stacks.
+-> the memory allocated for an object usually includes some kind of pointer into the method area. in method area,
+   there is method table.
+-> he method table include pointers to data for methods declared explicitly in the object's class or inherited from 
+   superclasses.
+-> Each object in a Java virtual machine is associated with a lock (or mutex) that a program can use to coordinate 
+   multi-threaded access to the object. 
+-> Once a thread owns a lock, it can request the same lock again multiple times, but then has to release the lock the 
+   same number of times before it is made available to other threads.      ???????????
+-> In Java, arrays are full-fledged objects. Like objects, arrays are always stored on the heap. 
+   -> All arrays of the same dimension and type have the same class.
+      Example: the class name for an array of ints is "[I".
+	           The class name for a three-dimensional array of bytes is "[[[B".
+-> Each thread of a running program has its own pc register, or program counter, which is created when the thread is  
+   started. 
+-> All the data on a thread's Java stack is private to that thread. There is no way for a thread to access or alter the 
+   Java stack of another thread. Because of this, you need never worry about synchronizing multi- threaded access to local variables in your Java programs.
+-> A virtual method table (VMT), virtual function table, virtual call table, dispatch table, vtable, or vftable is a 
+   mechanism used in a programming language to support dynamic dispatch (or run-time method binding).
+-> JVM Stack: 
+  -> When a thread invokes a Java method, the virtual machine creates and pushes a new frame onto the thread's Java  
+     stack. This new frame then becomes the current frame. As the method executes, it uses the frame to store parameters, local variables, intermediate computations, and other data.
+  -> A method can complete in either of two ways. If a method completes by returning, it is said to have normal 
+     completion. If it completes by throwing an exception, it is said to have abrupt completion. When a method completes, whether normally or abruptly, the Java virtual machine pops and discards the method's stack frame. The frame for the previous method then becomes the current frame.
+   
+   
+   
+   
+
+  

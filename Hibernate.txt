@@ -1,0 +1,272 @@
+
+================================================= NOTE: =========================
+-------------------------------- basic ----------------------
+-> Different state of entity object:
+   1. Transient 2. persistent 3. detached
+-> By default, Inheritance works for single class table strategy and creates a single table for its parent and 
+   sub classes.
+
+--------------------------------- moderate -------------------
+-- Annotation
+	@MappedSuperclass, @JoinTable, @ForceDiscriminator
+-> mappedby, , orphanable = true, inheritance, association and composition,
+
+
+
+
+-------------------------------- Of Use
+-> orphanable = true: If we have a entity and it's dependent entity. if we have put cascade type all, then while
+               saving the main entity, it will save the other entity as well. but while updating it, only the 
+			   relationship info get deleted not actually dependent entity info. 
+		-> So if we want to delete dependent entity as well while deleting main one, then we have to add attribute "orphanable = true" and have to use session.merge(enetity-obj).ex:
+				@OneToMany(cascade=CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+
+-> @MappedSuperclass: An entity cannot be annotated with both @Entity and @MappedSuperclass.
+              -> not be managed by the persistence provider as @Entity is not available on the class.
+              -> The JPA standard specification defines the @MappedSuperclass annotation to allow an entity to inherit properties from a base class.
+			  -> alternate for @MappedSuperClass Annotation, use the below two annotation:
+           		 @Entity and 
+				 @Inheritance(strategy=InheritanceType.TABLE_PER_CLASS).
+		
+
+
+===========================================================
+-> you can re-attach a detached object to hibernate sessions by calling either update() or saveOrUpdate() method.
+-> Hibernate.initialize()
+-> session.evict() and session.merge();
+
+=============================== Steps Need to be followed to connect to the DB using Hibernate ======================
+-> download the PostGreSQL and install it.
+-> add the maven artifact to download the postGreSQL connector. here it is
+	<dependency>
+	    <groupId>org.postgresql</groupId>
+	    <artifactId>postgresql</artifactId>
+	    <version>9.3-1102-jdbc41</version>
+	</dependency>
+-> then configure the Hibernate cfg/ or spring-context.xml file.
+
+======================================================================================================================
+Q) what is difference get() and load()?
+Ans: get(): return null in case of not getting value from db
+     load(): throw exception as because, as it didn't hit the db. while accessing the property it will hit the db.
+
+Q) What is N+1 SELECT problem in Hibernate? (detailed answer)
+Q) What are some strategies to solve the N+1 SELECT problem in Hibernate?
+
+
+Q) What is the difference between save(), saveOrUpdate() and persist() method in Hibernate?
+Ans: save() : return value(primary key/identifier)
+     persist() : it doesn't return the database identifier but void
+	 saveOrUpdate() : can be used to reattach a detached object in Hibernate Session
+Q) What is the requirement for a Java object to become Hibernate entity object?
+Ans: -> should not be final
+     -> should have no-arg constructor
+Q) What are different types of caches available in Hibernate?
+Ans:
+	First-level caching: First level cache is maintained at Session level and cannot be disabled
+	Second-level caching: the second level cache is required to be configured with external cache provider like EhCache is maintained at SessionFactory level and shared by all sessions.
+	Query caching:
+Q) Does SessionFactory is thread-safe in Hibernate?
+Ans: 
+	Hint: it is immutable
+Q) What is different between Session and Sessionfactory in Hibernate?
+Ans: 
+	-> Session is single threaded, short-lived object. it support first level cache.
+	-> Sessionfactory Immutable and shared by all Session. It also lives until the Hibernate is running. it support second level cache.
+Q) What is Criteria Query in Hibernate?
+Ans: Criteria is a simplified API for retrieving entities by composing Criterion objects also known as Criterion query.
+	List books = session.createCriteria(Book.class) 
+	.add(Restrictions.like("name", "java%") ) 
+	.add(Restrictions.like("published_year", "2015")) 
+	.addOrder(Order.asc("name") ) 
+	.list
+Q) What is difference between getCurrentSession() and openSession() in Hibernate?
+Ans:
+
+Q) What is Hibernate Query Language (HQL)?
+Ans:
+	Hibernate query language, HQL is an object-oriented extension to SQL. It allows you to query, store, update, 
+	and retrieve objects from a database without using SQL. 
+Q) When do you use merge() and update() in Hibernate?
+Ans:
+	This is one of the tricky Hibernate interview questions. You should use update() if you are sure that the Hibernate session does not contain an already 
+	persistent instance with the same id and use merge() if you want to merge your modifications at any time without considering the state of the session.
+Q) The difference between sorted and ordered collection in Hibernate? 
+Ans: 
+	The main difference between sorted and ordered collection is that sorted collection sort the data in JVM's heap memory using Java's collection framework 
+	sorting methods while ordered collection is sorted using order by clause in the database itself. A sorted collection is more suited for small dataset but 
+	for a large dataset, it's better to use ordered collection to avoid OutOfMemoryError 
+	in Java application.
+	
+Q) What are the three states of a Hibernate Persistence object can be?
+Ans: transient, persistent and detached
+
+Q) Explain about the evict() and merge() session method.
+Ans:
+	evict(): To detach the object from session cache, hibernate provides evict() method. After detaching the object from the session, 
+	        any change to object will not be persisted.
+			session.evict(Entity_object);
+    merge() method is used to merge an object with persistent object on the basis of same identifier.
+	        session.merge(Entity_Obj);
+
+Q) How can we load hibernate cfg file outside of the application?
+Like: SessionFactory sessionFactory = new Configuration()
+                                     .configure("D:\\fax\\hibernate.cfg.xml")
+                                     .buildSessionFactory();
+Ans:
+	There is a method public Configuration configure(File configFile) in class Configuration
+	Try the following, it should work for sure :)
+	
+	File f = new File("D:\\fax\\hibernate.cfg.xml");
+	SessionFactory sessionFactory = new Configuration().configure(f).buildSessionFactory();
+	The difference is you have used a method configure(String resource) which is expecting a resource in a classpath, but where as configure(File configFile) is
+	expecting a File, so you can pass it.
+
+Q) What does @AttributeOverride mean?
+Ans:  By using the @AttributeOverride you're saying "ignore what other information you have with regard to what column it is stored in, 
+	and use the one I specify here".
+	Like:
+	@EmbeddedId
+    @AttributeOverrides({
+        @AttributeOverride(name="lastName", column=@Column(name="LAST_NAME"),
+        @AttributeOverride(name="ssn", column=@Column(name="SSN"))
+    })
+
+Q) explain about the hibernate inheritance?
+Ans:
+	Table Per Hierarchy: one extra col created to discriminate info about the class -> for each class(parent or child), new record created
+	Table Per Concrete: @AttributeOverrides.. to override parent properties/column name ... both are independent no relation
+	Table Per Subclass: @PrimaryKeyJoinColumn ... there would be foreign key relation between child and parent class
+	
+Q) How many table will be created if we will save an Entity person having property set of mobNo?
+Ans: whenever we will declare collection/String/Integer/wrapper class, we have to declare three thing.
+     Set -> name of property
+	 key -> for collection, hibernate create new table, this is foreign key from owing table/person
+	 columnId -> name of the column for the name property/mobNo
+	 
+	 <set name="phoneNumbers" table="EMP_PHONE_NUMBERS">
+       <key column="phoneid"></key>
+       <element column="phone_number" type="string"></element>
+     </set>
+
+Q) What is the use of the @ElementCollection and @CollectionTable in hibernate?
+                            or
+  How can we get the column from different table without using mapping/relationship?							
+Ans:
+	@ElementCollection is the feature which gets the columns values from another table without mapping two tables.
+	@CollectionTable will join the two tables for the given primary and foreign key. 
+	ex:
+	We have taken two entity student and college. In college entity, we will fetch students without mapping student and college entity.
+    in College Entity:
+		@ElementCollection
+		@CollectionTable(name="student", joinColumns=@JoinColumn(name="college_id"))
+		@Column(name="student_name")
+		private Set<String> students;   // it will not read the whole record for matching college_id but instead it will read just 'student_name' col
+	in Student Entity:
+		@Column(name="college_id")
+		private int collegeId;
+		
+Q) what is the use of session.evict(entity_obj) and session.refresh(entity_obj)? VVI
+
+Q) second level cache, which is default available in the hibernate, my question is after how long, hibernate would be syncig data with DB?
+Ans: 
+
+Q) How can we refer/connect multiple DB in Hibernate(like, dev, prod testing) and what is the best approach? 					VVI
+Ans: there is @Profile annotation used in the spring which can be used.
+Q) What could be reason for the below error and How can we fixed it?
+Error:
+    expense:org.hibernate.NonUniqueObjectException: A different object with the same identifier value was already associated with the session 
+Ans:
+   I was having one directional ManyToOne mapping with CascadeType.All properties. i just removed this properties. it fixed the issue.
+   
+Q) What are the different ways to delete entity?
+Ans: 1. Deleting a transient instance: 
+			Example: Product product = new Product();
+					 product.setId(37);
+	                 session.delete(product);
+	    limitation: if the product is associate with other product in that case, it could not delete it, & throws
+		            Exception. even an appropriate cascade type is specified in the class mappings/annotations.
+     2. Deleting a persistent instance:
+			Example: Serializable id = new Long(17);
+		   Object persistentInstance = session.load(Category.class, id);
+		   if (persistentInstance != null) {
+				session.delete(persistentInstance);
+	       }
+	 3. Using Hibernate Query Language (HQL): like: "Delete Category where id = 123"
+Q) How to inherit properties from a base class entity using @MappedSuperclass with JPA and Hibernate?
+Ans: The JPA standard specification defines the @MappedSuperclass annotation to allow an entity to inherit 
+   properties from a base class.
+   -> 
+
+
+------------ Error -------------
+Error:
+ org.hibernate.TransientObjectException: object references an unsaved transient instance - save the transient instance before flushing:
+Explanation: might be because of, there is Defined one entity inside of another entity and we have defined, 
+ nothing about cascade type and when we will try to saveOrUpdate main Entity only without saving the dependent
+ entity then it will through this error. To save all dependent in the hierarchy in one shot without throwing 
+ exception, we have to define the cascade type on the member entity as below:
+		@OneToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+		private List<Book> book = new ArrayList<>();
+
+Error: 
+org.hibernate.MappingException: Could not determine type for: com.learn.hibernate.singleTableInheritance.Book, at table:
+
+
+Error: 
+ org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role: com.learn.hibernate.singleTableInheritance.ManageProduct.book, could not initialize proxy - no Session
+Explanation: reading a entity object which has member entity set. before processing the entity, closed the 
+  session. So while processing the entity, it is throwing error as because, by default it is lazy loading.
+  So please make it eager loading as:
+			@OneToMany(cascade=CascadeType.ALL, fetch = FetchType.EAGER)
+			private List<Book> book = new ArrayList<>();
+			
+Error: 
+  lambda expressions are not supported in -source 1.5.  // while doing maven build
+Solution: add following line in the pom.xml:
+  <plugin>    
+		<artifactId>maven-compiler-plugin</artifactId>
+		<configuration>
+			<source>1.8</source>                 <!-- if not provided by default this is 1.5 which lead to throw while building if we have implement java 8  -->
+			<target>1.8</target>
+		</configuration>
+	</plugin>
+  
+
+ 
+
+========================= To do =============
+-> create a inheritance without specifying inheritance strategy on the table. How will it react. 
+   and what if i am saving in the same table with the parent property
+   
+==> for java file:
+Q) ClassNotFoundException Vs NoClassDefFoundError in Java
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,4 @@
+-> Proxy: Proxy is a design pattern. We create and use proxy objects when we want to add or modify some functionality of an 
+          already existing class.
+-> Steps which need to be taken while implementing Proxy in Java:
+         1. 

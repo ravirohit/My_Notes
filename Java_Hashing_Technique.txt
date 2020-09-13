@@ -1,0 +1,54 @@
+---------------------- SHORT Form -------------
+MD5: Message Digest Version        // hashing algorithm for one way encryption
+SHA: Secure Hash Algorithm         // hashing algorithm for one way encryption
+UTF: Unicode Transformation Format // UTF-8 is a method for encoding Unicode characters using 8-bit sequences.
+AES: Advanced Encryption Standard  // used for encryption and decryption symmetric alorithm
+RSA: used for encryption and decryption Asymmetric alorithm 
+---------------- define hashing ----------
+Hashing: it is always associated with mathematical function which operate on the input String generate the value.
+        Mathematical function is called as Hash function. Thumb rule of the function is if two generated value is same then input value will
+		always be same.
+		    Hashing -> String + Hash function = Generate value
+====================== SHA-1 =========
+-> Java coding aproach is same for all kind of hashing function algorithm like: "MD5", "SHA-1", "SHA-256".
+   Example: 
+   -> for Large message or large file:
+		 MessageDigest digest = MessageDigest.getInstance(algorithm);
+		 byte[] inputBytes = // get bytes array from message
+		 digest.update(inputBytes);
+		 byte[] hashedBytes = digest.digest();
+		// convert hash bytes to string (usually in hexadecimal form)
+  -> for small sized message:
+        // algorithm can be "MD5", "SHA-1", "SHA-256"
+        MessageDigest digest = MessageDigest.getInstance(algorithm);
+        byte[] inputBytes = // get bytes array from message
+        byte[] hashBytes = digest.digest(inputBytes);
+       // convert hash bytes to string (usually in hexadecimal form)
+	   
+======================= Encryption & Decryption ==========
+https://www.quickprogrammingtips.com/java/how-to-encrypt-and-decrypt-data-in-java-using-aes-algorithm.html
+AES: AES is a symmetric encryption algorithm.
+    -> AES is block cipher capable of handling 128 bit blocks, using keys sized at 128, 192, and 256 bits.
+	-> It uses the same key for encrypting and decrypting, so the sender and the receiver must both know — and use — 
+	   the same secret key.
+    -> Encryption:
+	   plain text -> generate key -> create Cipher object -> init it in encrypt mode -> call dofinal to generate cipher 
+	   byte array -> convert the byte array to hex decimal format
+	   
+	-> Decryption:
+	   hex value -> byte array of cipher -> create Cipher object -> init it in decrypt mode -> use the same key and 
+	   call the dofinal method -> we will have the byte array of plan text -> convert it to plain text using new String(byteArray).
+	   
+	   example: 
+	      byte[] plainText  = text.getBytes("UTF-8");
+	      Key key = ... // get / create symmetric encryption key
+	      Cipher cipher = Cipher.getInstance("AES");
+		  cipher.init(Cipher.ENCRYPT_MODE, key);
+		  cipher.init(Cipher.DECRYPT_MODE, key);
+		  byte[] plainText = cipher.doFinal(cipherText);  // based on cipher initialization, encrypt or decrypt happens
+	   
+
+
+======================= Q&A ===========
+Q) how to calculate md5 and sha hash values in java?
+  https://www.codejava.net/coding/how-to-calculate-md5-and-sha-hash-values-in-java

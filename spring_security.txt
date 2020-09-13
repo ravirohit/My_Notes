@@ -1,0 +1,153 @@
+-> Steps to create very basic security by spring:
+   -> add maven dependecy:
+			 <!-- Spring Security -->
+				<dependency>
+					<groupId>org.springframework.security</groupId>
+					<artifactId>spring-security-web</artifactId>
+					<version>${springsecurity.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework.security</groupId>
+					<artifactId>spring-security-config</artifactId>
+					<version>${springsecurity.version}</version>
+				</dependency>
+				<dependency>
+					<groupId>org.springframework.security</groupId>
+					<artifactId>spring-security-taglibs</artifactId>
+					<version>${springsecurity.version}</version>
+				</dependency>
+   -> add the filter:
+			  <filter>
+			  <filter-name>springSecurityFilterChain</filter-name>
+			  <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+			 </filter>
+			 <filter-mapping>
+			   <filter-name>springSecurityFilterChain</filter-name>
+			   <url-pattern>/*</url-pattern>
+			 </filter-mapping>
+   -> add the authentication logic in the spring-context.xml:
+			 <http auto-config="true">
+				<intercept-url pattern="/myapp/test" access="hasRole('ROLE_USER')" />
+				<intercept-url pattern="/rest/myapp/test" access="hasRole('ROLE_ADMIN')" />
+			 </http>
+			 <authentication-manager>
+				<authentication-provider>
+				  <user-service>
+					<user name="rohit" password="password" authorities="ROLE_USER"></user>
+					<user name="raj" password="password" authorities="ROLE_ADMIN"></user>
+					<user name="rohan" password="password" authorities="ROLE_ADMIN"></user>
+					<user name="ranjan" password="password" authorities="ROLE_USER"></user>
+				  </user-service>
+				</authentication-provider>
+			 </authentication-manager>
+			 
+			 
+------------------------ Errors -----------------------------
+CSRF: Cross Site Request Forgery.
+Note:When should you use CSRF protection? Our recommendation is to use CSRF protection for any request that could be processed by a browser by normal users. 
+     If you are only creating a service that is used by non-browser clients, you will likely want to disable CSRF protection.
+ If will not enabled we will get error something like below while consuming the service: 
+Error: 
+     Could not verify the provided CSRF token because your session was not found.?
+                                or 
+     Invalid CSRF Token 'null' was found on the request parameter '_csrf' or header 'X-CSRF-TOKEN'
+Solution:
+     We have to disabled the CSRF in case, we are going to test the service or invoke it from non-broswer client:
+	            <http>
+					  <!-- ... -->
+					  <csrf disabled="true"/>                 // need to be noted down
+				</http>
+ 
+ 
+ ---
+ Error:
+ exception occur in mapper:com.fasterxml.jackson.databind.JsonMappingException: A granted authority textual representation is required (through reference chain: org.munsiji.persistance.resource.UserExpense["userAccount"]
+		->org.munsiji.persistance.resource.UserAccount["userDetails"]->org.munsiji.persistance.resource.UserDetails["authorities"])
+Solution:
+ Reason behind getting this error is Role was saved to the DB as a null. i.e. there will be exception like above while accessing the service, in case, trying to access
+ the service which is secured to only particual user with some spcific role(ROLE_ADMIN)
+================================== My learning NOTE: ===========================
+===================== url from this app ============
+-> for public welcome page:
+	http://localhost:8080/springsecurityimpl/api/welcome        // require no credential
+-> for login page using postman:
+   http://localhost:8080/springsecurityimpl/api/login
+   Request payload:
+        {
+			"uname":"admin",
+			"pwd":"password"
+	 	}
+	 	
+================================ NOTE ===================
+AbstractSecurityWebApplicationInitializer:This class implements Spring's WebApplicationInitializer. That means the concrete implementations of this 
+                   abstract class will be initialized by SpringServletContainerInitializer given that the spring-web module is on classpath. 
+				-> AbstractSecurityWebApplicationInitializer registers the DelegatingFilterProxy to use the springSecurityFilterChain before 
+				   any other registered Filter.
+                -> The onStartup() method of this class, creates an instance of AnnotationConfigWebApplicationContext which registers client side 
+                    @Configuration classes with it and bootstraps Spring container.
+                -> code example: 
+                   public class AppSecurityInitializer extends AbstractSecurityWebApplicationInitializer {
+					  public AppSecurityInitializer() {
+					      super(MyAppConfig.class);
+					  }
+					}
+			   -> Note that, it's not necessary to call super(MyAppConfig.class) from the constructor, if our configuration class is already registered 
+			      via DispatcherServlet (if it's Spring MVC application)
+-> DelegatingFilterProxy:The DelegatingFilterProxy is a servlet filter that allows passing control to Filter classes that have access to the Spring 
+                  application context. 
+-> @EnableWebSecurity: This annotation is used on our configuration class to important necessary Spring security configuration. 
+               -> Example: 
+                    @Import({ WebSecurityConfiguration.class, SpringWebMvcImportSelector.class })
+					@EnableGlobalAuthentication
+					@Configuration
+					public @interface EnableWebSecurity {
+					 ....
+					}
+-> WebSecurityConfigurerAdapter: it is implemented by the client application (usually by @Configuration class) to customize WebSecurity and HttpSecurity.
+-> WebMvcConfigurerAdapter: This is an abstract class that implements the WebMvcConfigurer interface and contains empty implementations for all the methods 
+                inherited like resolvers, interceptors and more.
+              -> Java 8 added the concept of default methods in interfaces. So,  the WebMvcConfigurer interface, starting with Spring 5, contains default 
+                 implementations for all its methods. As a result, the abstract adapter class was marked as deprecated.
+================================= Spring security flow ==============================
+AbstractSecurityWebApplicationInitializer -> create a class extending it to let spring know, to process all incoming requet to 
+                     application by spring filter(DelegatingFilterProxy). keep this file to package which is being scanned by spring.
+dispatcherservlet:-> for detailed information: 
+                        https://howtodoinjava.com/spring5/webmvc/spring-dispatcherservlet-tutorial/ 
+                  -> where we define what pattern of request api will be taken care by dispatcherservlet to map it to resource.
+                  -> here we register the securityconfig class which need to be loaded first.
+				  -> in this config class we configure AuthenticationManagerBuilder auth and httpsecurity object.
+				  -> in AuthenticationManagerBuilder, we register "CustomAuthenticationProvider" where we authenticate the Authentication object and if it is invalid user will get then response is "unauthorized" else it will return "UsernamePasswordAuthenticationToken" object which will again used by spring whenever user tried to access the api. based on the role available in UsernamePasswordAuthenticationToken object, spring will allow user to access it or will get "forbidden" response.
+				  -> Here how can we override behaviour of 
+				         1. creation of the authentication object from custom filter processing request
+						 2. create a "unauthorized" response through our html file for invalid user
+						 3. create a "forbidden" response through our html file for having not required role.
+	1. creation of the authentication object from custom filter processing request:
+	   Ans: create a filter class UsernamePasswordAuthenticationFilter implementing UsernamePasswordAuthenticationFilter.
+	       here we override the method attemptAuthentication() which process the request and return an object of type Authentication which will finally processed by CustomAuthenticationProvider.
+		  -> to activate this custom filter we will add it to httpsecurity object as:
+		     http.addFilterBefore(authenticationFilter(), UsernamePasswordAuthenticationFilter.class)
+			        and:
+		     public CustomUsernamePasswordAuthenticationFilter authenticationFilter() throws Exception { ... }
+	        NOTE: for more detail see the code 
+    2. create a "unauthorized" response through our html file for invalid user:
+	   Ans: in the method attemptAuthentication() of UsernamePasswordAuthenticationFilter, we can right the logic to check if 
+	        provided credential is right or wrong if wrong use the response object to redirect the page to the customuauthorized 
+			page and if it is right let it work as usual.
+    3. create a "forbidden" response through our html file for having not required role.
+       Ans: -> create a custom class implements AccessDeniedHandler which override handle() method.	Here we can redirect the the  
+	           response to the UI page we wants.
+			-> register the created custom class with httpSecurity object as:
+			     http.exceptionHandling().accessDeniedHandler(return new CustomAccessDeniedHandler(););
+-> Override the default spring login page to custom login page:
+    -> add the api to HttpSecurity object which will redirect the incoming call to the login UI page.
+	        http.formLogin().loginPage("/api/login") // and this api will be in permitAll() category means accessible without 
+			                                         // login
+    -> now whenever we will try to access to the api which required user to be logged in then automatically spring will redirect
+	   the user to this api. 
+	-> now in our api "/api/login", we will right a code to redirect the user to the customlogin.html page.
+
+
+					
+					
+					
+					

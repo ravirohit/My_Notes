@@ -1,0 +1,211 @@
+-------------- branch creation ---------------------
+git clone URL
+git branch 
+git branch new_branch            create a new branch locally
+git checkout new_branch          switch branch to new_branch and now do all the changes 
+git checkout master              switch to master branch
+git checkout -b new_branch 
+git merge new_branch             merge new_branch to current branch
+git pull                         git pull to the master branch
+git push                         git push to the merge content to the master branch
+git checkout new_branch          switch to the new_branch
+git push                         			try to push the new branch to the remote hub. but it will throw error with suggesting command i.e.
+git push origin new_branch       			sometime it does not work then go for the OR option
+              OR
+git push --set-upstream origin new_branch   used instead of the previous command
+git branch -d new_branch         			delete the new_branch  
+git push origin --delete feature/login      Deleting remote branches in Git
+
+git add *.properties
+git commit -m "code changes to improve code quality"
+
+git remote add upstream git@github.hpe.com:NDS-NA/component-ldap.git
+git pull upstream master
+git remote -v
+git branch -r    / -a
+
+--------- undo the added changes to the index
+git add *.java     // it will be registered to be commited
+git reset *.java   /// it will undo the command "git add"
+-------------  undo or revert last commit ----------------
+#git reset --hard HEAD~1
+- let's assume i have commited 4 times but not push it. if we want to revert last 3 commits. then we just have to run
+  above command three times. it's done.
+-------------------------- Note -----------------------
+-> create a branch and checkout to it in one command(two in one command):
+   git checkout -b new_branch 
+-> Whenever we create a branch from the current branch without stashing the current changes, it create the clone for the current state(like same commit info, tracked and untracked file). after checking out to the new created branch, and commit the uncommit file. it will happens and while going back 
+   to the prev branch, it will have only tracked file information. 
+
+--------------------------- Q&A -----------------------------
+Q) How to sync master branch and new_branch to each other?
+Ans: 
+   git checkout master
+   git merge new_branch        // merge new branch to the master
+   git checkout new_branch
+   git merge master            // merge master to the new_branch
+   
+Q) how to fix conflict, if we have two branch master and new_branch and while merging the new_branch to the master branch it has conflict.
+Solution:
+  error in command "git merge new_branch"
+  Steps to fix the conflict in the file.
+      "fixed the conflicted file code/content"
+	  git add "conflicted file name"
+	  git commit -m "conflict fixed"
+	  git merge new_branch               // it will say "already up to date" and all the content of the new_branch is in master branch but master branch doesn't sync to the new_branch yet
+	  git checkout new_branch    
+	  git merge master                // sync the master branch to the new_branch
+
+Q) How to switch between branch in the Git without commit the working file.
+Ans: we have to stage the changes in the current working file.
+    git stash          // stash the all the file but not yet commit
+	git stash list    //  here we can see all the stashed stack
+	-> again we can come back to the branch and run the below command to get the all working environment as same as it was while checking out to 
+	   another branch
+    git stash apply stash@{2}
+NOTE: git stash drop     // it delete the stash@{0} out of all the stash available in the stash list
+Q) How to delete the save stash in the git graph?
+Ans: 
+	
+Q) What is difference between "git branch -d branch_name" and "git branch -D branch_name"(force delete) command?
+And: "git branch -d branch_name"      // notify user, if the deleting branch is not merged to master and trying to delete it.
+     "git branch -D branch_name"      // even branch is not merged with the master, we can delete the branch.
+	 
+Q) What is rebasing in the Git?
+Ans:
+   -> Rebasing is the process of moving or combining a sequence of commits to a new base commit.
+   -> It come into the picture when, i have create a branch A from master. now master has two commit c1 and c2 with new contents. 
+      Branch A also has three commit cb1, cb2, cb3. As we know branch is having base in the master before two commit c1 and c2. but now i
+	  want to change the base of the branch A to the master after commit c1 and c2.
+	  To achieve this one we use the rebase technique, 
+   -> As of current status of the master and A, commit log info:
+      A branch commit log info:
+        past to preset order: cb1 -> cb2 -> cb3
+	  Master branch commit log info:
+	    past to preset order:  c1 -> c2 
+   -> Steps need to be followed, 
+      git checkout A                 // switch to branch A
+	  git rebase master              // means: we are rebasing A branch with respect to the master branch
+   -> git rebase master command does:
+      1. it will take all the changes of the master latest branch after c1 and c2.
+	  2. after that all the changes of the branch (cb1, cb2 and cb3) will be merged to the branch A.
+	  3. So in the commit log of the branch A it will show:
+	       past to preset order:  c1 -> c2 -> cb1 -> cb2 -> cb3
+	     commit log of master:
+		   past to preset order:  c1 -> c2 
+CASE 1: How to fix conflict situation while doing rebase:
+      Option1: Resolve all conflicts manually, mark them as resolved with
+		 "git add/rm <conflicted_files>", then run "git rebase --continue".
+		 
+	  Option2: below command also provide a way to fix the conflict but in this case all the conflicted commit will be skipped on the current branch and local branc will be synched with the content of the master branch. 
+	     #git rebase --skip
+	  -> To abort and get back to the state before "git rebase", run 
+	     #git rebase --abort    // yet to confirm
+
+Q) Changing git commit message after push (given that no one pulled from remote)?
+Ans: Below command is use for this purpose:
+		git commit --amend -m "New commit message"
+		git push --force origin <BRANCH-NAME>   
+     NOTE: -m if you want to wipe out the old message and use a new one. else no need to use -m.
+	 
+Q) Error while pulling from remote repo.
+   Error: 
+   error: Your local changes to the following files would be overwritten by merge:
+			.gitignore
+Ans: solution:
+	   C:\Project_Work\Simulap_Code_Setup\simulap-plugin-smpp>git pull origin master
+	Enter passphrase for key '/c/Users/raviro/.ssh/id_rsa':
+	From github.hpe.com:SIMULAP/simulap-plugin-smpp
+	 * branch            master     -> FETCH_HEAD
+	
+	Please commit your changes or stash them before you merge.
+	Aborting
+	Updating d4ce6af..db77da0
+
+	C:\Project_Work\Simulap_Code_Setup\simulap-plugin-smpp>git reset hard
+	fatal: ambiguous argument 'hard': unknown revision or path not in the working tree.
+	Use '--' to separate paths from revisions, like this:
+	'git <command> [<revision>...] -- [<file>...]'
+
+	C:\Project_Work\Simulap_Code_Setup\simulap-plugin-smpp>git reset --hard
+	HEAD is now at d4ce6af Merge pull request #35 from SIMULAP/SMPPStackUpdate 
+
+Q) How to figure it out, our branch has been created from which branch or master branch?
+               OR
+   How to check the parent of the current branch?
+Ans: 
+
+Q) What is difference between origin, upstream, downstream and master in git?
+Ans: This should be understood in the context of GitHub forks (when you clone a GitHub repo at GitHub, before cloning 
+    that fork locally).
+	Upstream: upstream generally refers to the original repo from which you have forked (see also “Definition of 
+	          “downstream” and “upstream”” for more on upstream term).
+	Origin: It is your fork. your own repo on GitHub, clone of the original repo of GitHub.
+            ------------------ in other words --------------
+	    When a repo is cloned, it has a default remote called origin that points to your fork on GitHub, not the original repo it was forked from. To keep track of the original repo, you need to add another remote named upstream as follow:
+	#git clone  git@github.com:MY_USERNAME/simulap-plugin-sip.git           // clone the fork
+	#git remote add upstream git@github.com:SIMULAP/simulap-plugin-sip.git  // add upstream to the local cloned fork
+	                                                                        // to sync local with the original repo
+Q) How to rebase/sync our local branch code which is cloned from fork with the orignal repo(from which fork has been 
+   created)?
+Ans:rebase local feature/myFeature branch from upstream/master then push to origin/feature/MyFeature
+      #git checkout master                      // set master as the current branch
+      #git pull upstream master                 // update local master branch from upstream master branch
+      #git checkout  feature/myFeature          // set feature/myFeature as the current branch
+      #git rebase -i  master                    // rebase local feature/myFeature branch from top of local master branch 
+    -> after rebasing local branch,  commit locally then push to origin. here might be chances getting conflict. fix it
+	   and then push to the origin (which is fork)
+      #git push origin feature/myFeature         # push branch to origin 
+    -> create a "pull request" on origin(which is fork) on the github to merge the branch 
+	  Explanation:
+	   A pull request is a relationship object between "feature/myFeature branch on origin" and "master branch on upstream". Contributor has to create the pull request on origin. It automatically propagates the pull request on upstream, and notify upstream committers so as she/he can review it and treat it .
+	             ----------------- my thought ---------------------
+	   instead of creating pull request for the "branch on origin" to merge with the "master on upstream", i believe to 
+	   merge the branch with the origin(fork) then after create a pull request for "master on origin" with "master on 
+	   upstream".
+	-> pull request is merged on upstream master branch by committer. You must now cleanup your local feature/myFeature 
+	   branch as well as the remote feature/myFeature branch on origin. 
+	   Steps: 
+	   #git push origin --delete feature/myFeature // delete branch feature/myFeauture on origin
+       #git checkout master                        // set master as current branch to be able to delete another branch
+       #git branch -D  feature/myFeature           // delete local branch feature/myFeature
+Q) How to undo rebase process?
+Ans: let A is branch of master. now rebase A with master:
+      #git checkout A
+	  #git rebase master   // rebase A branch to master
+	  to undoe the rebase:
+	  #git reflog
+	   find the head before the rebase from the log. and Suppose the old commit was HEAD@{5} in the ref log:
+	  #git reset --hard HEAD@{5}
+Note: if we have push the branch to the git repository and now we are trying to rebase our local repository it 
+      will rebase find. but when we commit the branch to git repository after rebase. it will through error.
+	  There we can undo the rebase. 
+      Q) follow up question, then can we sync our code with master. if branch is pushed to the git repo, it is
+	  then rebase is not solution in our location repository.
+	  Solution: use the merge instead of rebase in the local repository and the push
+				to the git repository.
+		#git checkout A
+		#git merge master
+		#git push 
+Q) How to add more changes to your last commit? like i have commited our changes but forgot to add one file in that 
+   commit. So How can we add this file in the last commit?          // append file in last commit
+Ans: #git add <file_name>
+     #git commit --amend            // it will open one editer, if we want to change the commit message change or we can
+	                                // directly save as it is.
+					OR 
+	 If you don’t want to change your commit message, you can run the amend command with the no-edit flag, like this:
+	 #git commit --amend --no-edit
+Q) How to edit our last commit message? 
+Ans: 
+    #git commit --amend -m "Your new commit message"
+	   
+
+
+	  
+
+
+	
+	
+			  
+
+

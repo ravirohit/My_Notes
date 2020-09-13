@@ -1,0 +1,51 @@
+-> installation:
+   1. download jenkin.war file or jenkins msi setup file
+   2. for war file we can deploy it in the jboss server or we can install the jenkins msi file
+   3. access the url "http:\\localhost:8080" in the browser it will open the jenkin dashboard
+-> set up maven for creating maven project:
+   download maven Binary.zip file from maven site and put to any location here: c:\usr\project
+   configure the the maven in jenkins:
+    dashboard -> manage jenkins -> configure system -> in the maven section "Add maven" button -> Uncheck the ‘Install automatically’ option. Add any name for the setting and the location of the MAVEN_HOME.
+-> install plugin:
+   manage Jenkins -> manage plugin -> install git plugin
+-> now creating job, we will create a project "maven" and under that "source code management section will have git"
+
+===================== Q&A ===========================
+Q) why i am not able to install maven plugin from hpe network. it is throwing error: "SocketConnection timeout exception"?
+Ans: I tried to install plugin from network outside of the office. it worked fine.But inside the office, unable to install plugin.
+   am i suppose to set proxy and try. if so how??
+Q) How to get Jenkins Add Maven option under Configure System?
+Ans: in the jenkin tutorial, location of maven config is suggested in the location:
+   manage jenkins -> configuration system    // Here it is not available and moved to location "Global Tool configuration"
+Q) I have added MAVEN_HOME path in the "Global Tool configuration" window under maven section but still "Maven Project" option 
+   is not reflecting while creating new Job even after restarting of Jenkins. Why?
+Ans:
+Q) What is reason behind showing below warning in "manage jenkin" console?
+   warning: Jenkins root URL is empty but is required for the proper operation of many Jenkins features like email notifications, PR status update, and environment variables such as BUILD_URL.
+Ans: 
+
+Q) How to allocate disk space for Jenkins. as it needs some disk space to perform builds and keep archives?
+  why: Jenkins needs some disk space to perform builds and keep archives.
+Ans: 
+
+Q) Is that important to install jenkin plugin to Github? I was trying to install this plugin at:
+   code repo -> setting -> integration & services -> there should be "add service" button but not available for me now. and showing it is being deprecated?   ???????????????????????????????               VVI
+   
+Q) How to add new user to the Jenkins?
+Ans: there is two ways:
+   1. enable "sign up" option at the login page: step:
+      manage jenkin -> configure global security -> check "enable security" -> select "Jenkin's owner user database" -> check 
+	  "allow user to sign up"  -> it will show option on login page to "create user"
+   2. admin user can create user in the jenkin:
+      manage jenkin -> manage users -> create user -> here we would be able to create user 
+	  
+
+	  
+	  
+================== Error =============================
+Error: while building jenkin job:
+      Waiting for Jenkins to finish collecting data
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-resources-plugin:2.6:resources (default-resources) on project munsiji-common: Execution default-resources of goal org.apache.maven.plugins:maven-resources-plugin:2.6:resources failed: A required class was missing while executing org.apache.maven.plugins:maven-resources-plugin:2.6:resources: Lorg/sonatype/plexus/build/incremental/BuildContext;
+   
+      
+   

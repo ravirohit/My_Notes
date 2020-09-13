@@ -1,0 +1,223 @@
+-------------------- link ----------------------
+https://www.javacodegeeks.com/2018/04/jvm-architecture-jvm-class-loader-and-runtime-data-areas.html
+---------------- of Use -----------
+-> Each class loader has a parent class loader. When a class loader is asked to load a class or resource, it consults its parent class loader before attempting to load the item itself. The parent in turn consults its parent, and so on. So it is only after all of the ancestor class loaders cannot find the item then the current class loader load it.
+-> same class loaded by two loader treated as two different class entity. we can't even cast one class(loader 1) object to another class(loaded by loader2). it will throw ClassCastException.
+-> A child class loader can check the cache of the parent class loader, but the parent cannot see classes loaded 
+	      by the child. 
+-> every classloader (except for the primordial classloader that bootstraps the entire JVM) has a single parent.
+-> Each class will use its own classloader to load other classes. So if ClassA.class references ClassB.class then ClassB needs 
+   to be on the classpath of the classloader of ClassA, or its parents.
+-> The thread context classloader is the current classloader for the current thread. An object can be created from a class in 
+   ClassLoaderC and then passed to a thread owned by ClassLoaderD. In this case the object needs to use Thread.currentThread().getContextClassLoader() directly if it wants to load resources that are not available on its own classloader.
+---- How Class are loaded ---------
+1. Static class loading: In this technique classes are statically loaded via the new operator
+2. Dynamic class loading: In this technique classes are programmatically loaded by using the Class.forName() or the loadClass() 
+        method. 
+        -> The difference between the two is that the former one initializes the object after loading it while the latter one only loads the class but doesn’t initialize the object.
+		-> initialization i am refing to static block initialization.
+------ link --------
+-> major component of the JVM:         // https://anturis.com/blog/java-virtual-machine-the-essential-guide/
+   1. Class Loader:
+            -> Responsible for reading Java source code and convert it to binary data stream
+		    -> loading classes into the data areas.
+   2. Execution Engine: Responsible for executing instructions from the data areas.
+            -> it has two parts:
+			   1. Interpretation 2. Just in time(JIT) compilation
+	  NOTE: JIT compilation is not a requirement of the JVM specification, and it is not the only technique that is used to improve JVM performance.
+https://medium.com/@swayamraina/class-loading-in-java-8167fe43d54f
+https://www.talentcookie.com/2016/11/different-ways-load-class-create-objects/    class loading ways
+-> different ways to create object.
+-> JVM loading(convert the class into a binary stream):
+          -> Responsible for reading Java source code and convert it to binary data stream
+		  -> loading classes into the data areas.
+   JVM Linking(verfication(meet jvm semantics), preparation(memory allocation)): it is the process of taking the class or
+          interface and combining it into runtime state of the jvm so that it can be executed.
+   JVM initialization: nitialization of a class or interface consists of executing its class or interface 
+          initialization method.
+		  -> JVM will initialize superclass and fields in textual order, initialize static, final fields first, and give every field a default value before initialization.
+-> different ways to load a class:
+   1. SomeInstance someInstance = null;             // just load the class and no initialization
+   2. Class.forName("com.talentcookie.MyObject");   
+     -> loads the class and initialize it both at the same time.
+	 -> uses classloader of current class.
+   3. ClassLoader.getSystemClassLoader().loadClass("com.talentcookie.MyObject"); 
+     -> to load class, but doesn't initialize.
+   4. Class.forName(String name, boolean initialize, ClassLoader loader); 
+     -> allows you to specify the classloader to use explicitly and initialize parameter to specify whether the class must be initialized.
+   NOTE: from above explanation, it is not must the class will be initialized at the time of loading. 
+-> Different class loader used by JVM:
+   0. primordial class loader: Primordial class loader the first class loader responsible to load class loader like "BootStrap 
+               class loader" which is part of JVM and written in native language.
+			-> The class loader that loads the first classes (java.lang.Object, java.lang.Class, java.lang.String, 
+			   java.lang.ClassLoader and others).
+			-> every classloader (except for the primordial classloader that bootstraps the entire JVM) has a single parent. 
+   1. bootstrap class loader: The bootstrap class loader is the parent for other class loaders. 
+            -> load /jdk/bin/lib/*.jar jar files
+			-> It loads the core Java libraries and is the only one written in native code.
+   2. extension class loader: is a child of the bootstrap class loader. It loads the extension libraries.
+            -> load /jdk/bin/lib/ext/*.jar
+   3. system class loader: is a child of the extension class loader.     
+           -> It loads the application class files that are found in the system classpath.
+           -> classpath is nothing but the system variable pointing the class files.
+   4. Custom/Current class loader: A user-defined class loader is a child of the system class loader or another user-defined 
+              class loader.
+   5. Context Class loader: 
+   NOTE: When a class loader receives a request to load a class, it checks the cache to see if the class has already 
+         been loaded, then delegates the request to the parent.
+	   -> If the parent fails to load the class, then the child attempts to load the class itself.
+	   -> A child class loader can check the cache of the parent class loader, but the parent cannot see classes loaded 
+	      by the child. 
+    CASE 2: Solve the prblm:
+	   -> Assume we have created a classLoader urlClassloader1 of type URLClassLoader and url passed is x/abc.jar. and another 
+	   urlClassLoader2 of same type for the classpath y/xyz.jar in the same application. So question is, can urlClassloader1 can load the class from the location x/abc.jar or urlClassLoader2 can load class file from y/xyz.jar. 
+	Ans: No, Because urlClassloader1 point to only class path x/abc.jar. so as per the concept of class loading, first class loading effort will done by bootstrap(check classpath specified by it), then extension class loader(check class path pointed by it), then by System class Loader(check classpath pointed by it) and then finally to the class path x/abc.jar which is pointed by urlClassloader1.
+	   So, urlClassloader1 will only have classpath info of x/abc.jar and urlClassLoader2 will have for y/xyz.jar. consequently 
+	   1 loader can't access the class file for loader 2 and vice versa.
+	Also not possible because, A child class loader can check the cache of the parent class loader, but the parent cannot see classes loaded by the child. 
+	
+-> Explanation Relection and class loading: VVI
+                   As per my undetstanind, we use reflection when we don't have class file available at the time of development 
+    application, or we know the name of the class that will be avialble at run time to be loaded by classloader.
+	As we dont have jar file for the class file but we know the class name and package that will be availble at the run time. so we have to use reflection to create the object of that class, because we can't create the object using normal process as it will throw compile time error "Class not available" and can't build the application.
+	Example: 
+	        ClassLoader urlCl = 
+		    URLClassLoader.newInstance(new URL[]{new URL(url)}, prevCl);
+			Thread.currentThread().setContextClassLoader(urlCl);    // if class is not available at class path
+	        Class classObj =  Thread.currentThread().getContextClassLoader().loadClass("com.learn.service.ProcessData");
+		    Object obj = (ProcessInterface)classObj.newInstance();     // reflection
+		    Method method = obj.getClass().getDeclaredMethod("sumData", int.class,int.class);   // reflection
+		    System.out.println("invoked method called... return value is:"+method.invoke(obj,1,5));   // reflection
+    In the above example, we have observed that, after creating the object of the class, still we have to use reflection to make
+	the method call and before that we have to use reflection to get the method instance itself. 
+	     Here is the Solution and actual implementation of the Interface concept(Abstraction). There should be a Interface which 
+    should be implemented by the class. Now what we can do is, we will also created the same interface under the same package name
+	in our application. if we do this so, once the object will be created we don't have to use the reflection to call the method.
+	NOTE: package name of the interface should be same as the interface available in the jar file.
+	Example:
+			ClassLoader urlCl = 
+		    URLClassLoader.newInstance(new URL[]{new URL(url)}, prevCl); // making urclCl child of prevCl class loader
+			Thread.currentThread().setContextClassLoader(urlCl);    // if class is not available at class path
+	        Class classObj =  Thread.currentThread().getContextClassLoader().loadClass("com.learn.service.ProcessData");
+		    IntefaceName obj = (ProcessInterface)classObj.newInstance();     // reflection
+		    //Method method = obj.getClass().getDeclaredMethod("sumData", int.class,int.class);   // no need of this line
+		    System.out.println("invoked method called... return value is:"+obj.sumData(1,5));   // normal method call
+	NOTE: So, if we don't have implementation class of the interface in code development means, it is getting supplied in the 
+	      run time environment. 
+		     
+-> Explain about URIClassLoader: // URLClassLoader.newInstance(new URL[]{new URL(url)}, prevCl);
+   
+-> same class loaded by two loader treated as two different class entity. we can't even cast one class(loader 1) object to another class(loaded by loader2). it will throw ClassCastException.
+	 
+======================== Q&A =================
+
+-> When a class is loaded and initialized in JVM
+   Ans: https://javarevisited.blogspot.com/2012/07/when-class-loading-initialization-java-example.html
+-> what is difference between ClassNotFoundException and NoClassDefFoundError?
+   Observation:
+   ClassNotFoundException: if load time class is not available at system variable Classpath then Systemloader will 
+                           throw this exception.
+            -> there is one point need to be noted. sometime, class is initialized(static block) at the time of loading 
+			   it. and sometime is initialized later one also.
+			   Example:
+			          User user;              // just declaration in this case only User class is loaded
+					  user = new User();      // this time User class' static block will be executed.
+			    Class.forName("com.learn.mainTest.User");  // class load and initialization both happens together.
+            -> for more information check different way to load the class;
+   NoClassDefFoundError: if class is loaded and we are trying to access the definition of the class that time it will
+                         throw this exception if there is error(ExceptionInInitializerError) while initializing the class.    
+    case for NoClassDefFoundErr 
+	-> loadclass successfully -> error while initialization -> again while trying to access the same class will generate the NoClassDefFoundError.
+	Example: 
+	{
+	  User users;    // load class but not initialize.
+	  try{
+		new User(String.valueOf(5)); //will throw ExceptionInInitializerError as here loaded class will initialize
+	  }catch(Throwable t){           // using Throwable as because it is throwing error not exception.
+			t.printStackTrace();
+	  }
+	  try{
+			new User(String.valueOf(5)); //again accessing the class will throw NoClassDefFoundError
+	  }catch(Throwable t){
+		t.printStackTrace();
+	  }
+	  ------
+	  class User{
+	   private static String USER_ID = getUserId();        // cause of ExceptionInInitializerError
+	   public User(String id){
+	       this.USER_ID = id;
+	   }
+	   private static String getUserId() {
+		  10/0;
+	   }     
+	}
+	------------------- or example ----------------
+	
+	try{
+		Class.forName("com.learn.mainTest.User");     // load class and initialization together
+	}
+	catch(Throwable e){
+	  e.printStackTrace();;
+	}
+	new User("4");            // here will throw error NoClassDefFoundError
+-> what are the difference kind of error or exception which is because of messed up thing due to classLoader?
+   1.ClassNotFoundException 2.ExceptionInInitializerError 3.NoClassDefFoundError 3.LinkageError 4.NoSuchMethodError
+   5.ClassCastException.   
+Q) what is difference between NoSuchMethodException and NoSuchMethodError in Java?
+Ans: NoSuchMethodException: NoSuchMethodException can be thrown when you're invoking a method through reflection, and 
+                            the name of the method comes from a variable in your program.
+			Example: 
+			        Class<?> loadedclass = ClassLoader.getSystemClassLoader().loadClass("com.learn.mainTest.classloading.ClassToLoad");
+					Object obj = loadedclass.newInstance();
+					Method display = loadedclass.getMethod("display");       // display is name of method
+					display.invoke(obj);
+					System.out.println("last statement of main");
+     NoSuchMethodError: when a compiled Java class does a regular method call to another class and the method doesn't 
+	                    exist.
+				-> reasong: This usually happens when the caller class was compiled against one version of the class being called, and is being executed together with another version of that class, which no longer has the method.
+Q) How to create a custom class loader?
+Ans: https://www.concretepage.com/java/custom-classloader-java-example
+   A custom ClassLoader is a sub class of ClassLoader which will override some methods of ClassLoader. 
+   -> There is a method findClass() that must be overridden. 
+   -> Create a method that will load your given class from the class path.
+Q) does class loaded using Class.forname() method and URLClassloader from a jar which is not available on the classpath
+   will be loaded twice if they are having same package name and class name?
+Ans: As i know, Class Loader is recognized by it's full qualified class name(pacakge + class name) and Class loader as well. 
+   So Class will be loaded twice if we are using Two different class loader and this two ClassLoaders are not in same parent - child heirarchy heirarchy and this Class should not be in CLASSPATH but at different location.
+   Code Example:
+          String url = "file:/C:/Project_Work/Other_learn/eclipse_workspace_learn/commonmodule/target/common-module.jar";
+          ClassLoader urlCl1 = URLClassLoader.newInstance(new URL[]{new URL(url)});
+          ClassLoader urlCl2 = URLClassLoader.newInstance(new URL[]{new URL(url)});
+		  Class classObj1 = urlCl1.loadClass("com.learn.service.ProcessData");
+		  Class classObj2 = urlCl2.loadClass("com.learn.service.ProcessData");
+	NOTE: Here both loaded class will be different because, both are loaded by different classloader and both are not in same 
+	      parent-child Heirarchy. 
+		  ProcessInterface obj1 = (ProcessInterface) classObj1.newInstance();   // cause running static block of code
+		  ProcessInterface obj2 = (ProcessInterface) classObj2.newInstance();   // cause running static block of code 
+	-> Classloader heirarchy for urlCl1 : urlCl1 -> system ClassLoader -> Extension Class Loader -> Bootstrap classloader
+	   -> and class will be loaded by urlCl1
+	-> Classloader heirarchy for urlCl2 : urlCl2 -> system ClassLoader -> Extension Class Loader -> Bootstrap classloader
+	   -> and class will be loaded by urlCl2
+
+-> How can we print all the classpath location pointed by the classloader?
+-> how can we add new classpath for the classloader?
+-> Difference between current classloader and context classsloader.
+Ans: Current Classloader: a current classloader loads and defines the class to which your current method belongs. 
+           -> This classloader is implied when dynamic links between classes resolve at runtime, and when you use the one-argument version of Class.forName(), Class.getResource()
+    Context ClassLoader: If you don't invoke this method following a Thread's construction, the thread will inherit its context 
+	          classloader from its parent Thread. 
+		   -> If you don't do anything at all in the entire application, all Threads will end up with the system classloader as 
+		      their context classloader. 
+   Also: 
+      Each class will use its own classloader to load other classes. So if ClassA.class references ClassB.class then ClassB needs to be on the classpath of the classloader of ClassA, or its parents.
+
+	  The thread context classloader is the current classloader for the current thread. An object can be created from a class in ClassLoaderC and then passed to a thread owned by ClassLoaderD. In this case the object needs to use Thread.currentThread().getContextClassLoader() directly if it wants to load resources that are not available on its own classloader.
+Q) Why do thread context classloaders exist in the first place?
+Ans: 
+Q) When to use context class loader and when to use current class loader?
+   
+   
+   
+     
+
+   

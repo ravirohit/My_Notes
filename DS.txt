@@ -1,0 +1,25 @@
+link of study:
+https://www.geeksforgeeks.org/array-data-structure/
+find sol for below problems:
+-> Count pairs from two sorted matrices with given sum (normal ways, using hashtable, binary search tree)
+
+------------------ Data Structure ----------------------------
+Array Rotation:
+Q) Program for array rotation (like shift 3 elements places for each element)
+Q) Reversal algorithm for array rotation for above prblm()
+Alog: Let AB are the two parts of the input array where A = arr[0..d-1] and B = arr[d..n-1]. The idea of the algorithm is:
+      Reverse A to get ArB. /* Ar is reverse of A */
+      Reverse B to get ArBr. /* Br is reverse of B */
+      Reverse all to get (ArBr) r = BA.
+  Note: what is difference between rotating a array and reverse an array
+  
+Q) Find maximum value of Sum( i*arr[i]) with only rotations on given array allowed
+Q) Find the Rotation Count in Rotated Sorted array.
+Sol: linear search : find the number of position shifted for the minimum value
+     Binary Search: The minimum element is the only element whose previous is greater than it. If there is no previous element element, then there is no rotation (first element is minimum). We check this condition for middle element by comparing it with (mid-1)’th and (mid+1)’th elements.
+If minimum element is not at middle (neither mid nor mid + 1), then minimum element lies in either left half or right half.
+If middle element is smaller than last element, then the minimum element lies in left half
+Else minimum element lies in right half.
+
+---------------- Binary Search Tree ----------------------------------
+  

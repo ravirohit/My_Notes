@@ -1,0 +1,31 @@
+what is CDI?
+Ans: Contexts and Dependency Injection (CDI) for the Java EE platform is one of several Java EE 6 features
+                   or
+CDI (Contexts and Dependency Injection) is a standard dependency injection framework included in Java EE 6 and higher.
+
+
+@Named: CDI also allows us to perform service injection with the @Named annotation.  
+        -> This method provides a more semantic way of injecting services, by binding a meaningful name to an implementation:
+    Ex:
+	@Named("GifFileEditor")
+	public class GifFileEditor implements ImageFileEditor { ... }
+	and injection syntax:
+	@Inject
+	private final @Named("GifFileEditor") ImageFileEditor imageFileEditor;
+-> Custom qualifier:
+			They not only bind a semantic name to a service, but they bind injection metadata too. Metadata such as the RetentionPolicy and the legal annotation targets (ElementType).
+    Custom Qualifier and @Named annotation can be along with the Scope annotation.
+	
+	
+	
+-> Interceptors and Decorators: a proxy is the perfect way to implement interceptors and decorators in a non-intrusive way.
+
+
+
+The @Inject annotation tells CDI to perform the injection
+how we get same instance whenever we inject it. 
+-> The Lifecycle of a CDI container
+   Let’s look at an easy scenario with a CDI container inside a plain Servlet engine such as Apache Tomcat. If a WebApplication gets started, a ServletFilter will automatically also start your CDI container which will firstly register all CDI-Extensions available on the ClassPath and then start with the class scanning. All ClassPath entries with a META-INF/beans.xml will be scanned and all classes will be parsed and stored as ‘Managed Bean’ (interface Bean<T>) meta-information inside the CDI container. The reason for scanning this information on startup is to: first. detect errors early and second, vastly improve the performance at runtime.
+	-> To be able to handle all the CDI Scopes correctly, a CDI container simply uses standard Servlet callbacks like ServletRequestListener and HttpSessionListener.
+	
+-> interceptor and decorator: 	https://jaxenter.com/tutorial-introduction-to-cdi-contexts-and-dependency-injection-for-java-ee-jsr-299-104536.html
