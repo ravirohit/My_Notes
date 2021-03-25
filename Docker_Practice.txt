@@ -1,0 +1,41 @@
+========= Linux Tool ============
+#wget <http url>   to download file and check the connectivity
+#curl <http url>   to invoke rest http api
+#telnet <IP> <port> to check the connectivity to remote machine using telnet command
+#apt-get is installtion util app in CentOs to install application.
+========= Prerquisite ============
+-> how to access virtual box vm from laptop:
+ - ping from loptop to the vm ip. if it is pinging it will work fine.
+-> VM should be able access internet.
+-> How to install rpm or any util on Centos 8 where, dnf, yum, rpm, wget is not already install?
+Ans: Please follow below steps:
+   #apt-get update
+   #apt-get install rpm
+   #apt-get install yum
+=========  Docker Revision =====================
+#docker pull nginx	       // pull alpine latest version
+#docker container exec -it c1 bash
+#wget http://mirror.centos.org/centos/8/BaseOS/x86_64/os/Packages/yum-4.2.17-7.el8_2.noarch.rpm
+
+================= Operation ==================
+-> How to Make container accessible from host machine?
+Ans: port mapping. 
+-> Can Host directly access to container service using container IP without using Port mapping concept?
+-> Can Container access application/service from host machine?                  ????????????????
+Ans: yes. Container can access Host application service(using port) by using docker0 interface Ip address.
+  Solution: You may need to modify the iptables rules on your host to permit connections from Docker containers. Something like this will do the trick:
+     #iptables -A INPUT -i docker0 -j ACCEPT
+  172.17.0.1 host machine docker0 interface ip address
+  172.17.0.2 ip address of container c1
+-> How to access outside world from container through host machine:
+And: 
+  -> login to host machine and follow below steps
+   - #firewall-cmd --list-all
+   - #firewall-cmd --permanent --add-masquerade    // by default value will be No. 
+   - #firewall-cmd --reload                        // after installation it will become yes.
+ -> now login to container and try to access internet. 
+-> how two container can communicate between each other? 
+   
+
+
+   

@@ -12,7 +12,21 @@
 ------------
 raj@rajware.net
 chitra@rajware.net
-
+--------------- Docket installation on centos 8 --------------------
+-> https://docs.docker.com/engine/install/centos/
+   #yum install -y yum-utils
+   #sudo yum-config-manager  --add-repo  https://download.docker.com/linux/centos/docker-ce.repo
+   #yum-config-manager --enable docker-ce-nightly
+   #yum-config-manager --enable docker-ce-test
+   #yum install docker-ce docker-ce-cli containerd.io
+    ERROR: it will throw dependecy error:
+   #wget https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm  
+   #rpm -ivh containerd.io-1.2.6-3.3.el7.x86_64.rpm  
+   #yum install docker-ce docker-ce-cli containerd.io  
+   #docker -v
+   #systemctl start docker
+   #docker image ls
+   
 --------------- Important application =--------------
 ->  used as pid =1 and refer to other appliation.
 -> tini
@@ -94,6 +108,7 @@ chitra@rajware.net
   -> option - (single letter option), --(option is multiple letter)
   -> all option must come before parameter.  
    #ps aux
+   #systemctl start docker
    #docker <pattern> <command>
    #docker image ls
    #docker image inspect nginx:alpine  // show the metadata of image. // also we can see data layers. but not meta data layers:
@@ -107,7 +122,7 @@ chitra@rajware.net
    #docker container create <image_name>  // from which container will get create
      - if we dont give the container name, docker will keep some name
    #docker container ls   // show all the docker which is running 
-   #docker container -a   // show all container created as well as running 
+   #docker container ls -a   // show all container created as well as running 
    #docker container inspect <container name or id>
    #ps aux | grep nginx
    #docker container start 1bc091361f41
@@ -158,7 +173,7 @@ chitra@rajware.net
   
 -------- 
     #docker container export             // export the entire container as tar file.
-	#docker container start -ia c4
+	#docker container start -ia c4       // start the container and attached terminal to it
 -> .ash_history: this file contains all the command info run on the container.
     #docker container rm c0 c1 c4
 	#docker container rm -f c0 c1 c4

@@ -1,0 +1,93 @@
+Q) explain the use of HttpSecurity class object?
+Ans: http
+			.authorizeRequests()
+				.antMatchers("/", "/home").permitAll()
+				.anyRequest().authenticated()
+				.and()
+			.formLogin()
+				.loginPage("/logintest")
+				.permitAll();
+			//	.and()
+			//.logout()
+				//.permitAll();
+  - All the input request is validate by configuration provided to HttpSecurity.
+  - All the ULR under permitAll() method is accessible without authentication.
+  - All URL without permitAll() is accessible only after user authentication. so if User try to access all these URLs without
+    being authenticated, Spring security will redirect the USER to login page.
+  - Spring Security itself provide login page and default ulr is: "/login" and no need to add under permitAll.
+  - default logout url in spring security is "/logout".
+  - Whatever ULR we are using for login page. custom or default. when we call logout. spring call the same login page on 
+    logout.
+  - Differnet case:
+    Case 1:  
+	  for request other thatn / and /home which require authentication redirect the request to spring security default login page. "/login" 
+	  http
+			.authorizeRequests()
+				.antMatchers("/", "/home").permitAll()
+				.anyRequest().authenticated()
+				.and()
+			.formLogin();
+    Case 2: 
+	  for request other thatn / and /home which require authentication redirect the request to spring security default login page. "/logintest"      // we can keep /login as well and map to your custom UI.
+	  http
+			.authorizeRequests()
+				.antMatchers("/", "/home").permitAll()
+				.anyRequest().authenticated()
+				.and()
+			.formLogin()
+			.loginPage("/logintest")            NOTE: make sure same url is geting called from login UI page.
+				.permitAll();;
+	Case 3:
+	   It will not work. as for resource which require authentication will redirect the request to /logintest. and /logintest
+	   is not in permitAll list so this request will also not be allowed. it will reach kind of deadlock situation.
+	   http
+			.authorizeRequests()
+				.antMatchers("/", "/home").permitAll()
+				.anyRequest().authenticated()
+				.and()
+			.formLogin()
+			.loginPage("/logintest");
+	  Solution: you can use like Case 2 or as below:  
+	    http
+			.authorizeRequests()
+				.antMatchers("/", "/home","/logintest").permitAll()
+				.anyRequest().authenticated()
+				.and()
+			.formLogin()
+			.loginPage("/logintest");
+	Case 4: Is it possible to create a separate URL for login UI page and separate URL for post login information for 
+	    authentication. yes it is possible but there is problem with this approach.
+	    - Way to achieve this scenario: 
+		  - add below in WebSecurityConfigurerAdapter implemented class:
+		  http
+			.authorizeRequests()
+				.antMatchers("/","/home","/loginui").permitAll()   // permit the UI return URL
+				.anyRequest().authenticated()
+				.and()
+			.formLogin()
+				.loginPage("/logintest")                     // use this URL in login.html page for authentication 
+				.permitAll()
+				.and()
+			.logout()
+				.permitAll();
+		 - add below in WebMvcConfigurer implemented class:
+		   registry.addViewController("/home").setViewName("home");
+		   registry.addViewController("/").setViewName("home");
+		   registry.addViewController("/hello").setViewName("hello");
+		   registry.addViewController("/loginui").setViewName("login");  // return login.html file
+		 - Above two configuration will work fine. But As we know, Spring security will use the same URL for logout what
+		   has been used for login purpose. so on logout, Spring security will invoke /logintest api. which is for differnent
+		   purpse. it will not show login.html page on the UI side and throw error. 
+		 - And Same issue will occur in case we want to access URL which need to be authorized and in that case SC will 
+		   redirect to "/logintest" which is not for login.html page.
+	  NOTE: so never keep different URL for login.html and post request from login page to different location. always keep
+	       keep same request.
+		 - Only difference is in http method type.
+		 - to get UI, type of the URL is GEt.
+		 - to send the user credential, http method type is POST.
+		 - that is how SC difference the request for UI and Posting the user credentail.
+				
+	  
+	 
+	   
+  

@@ -1,0 +1,22 @@
+-> how to disable keyboard shotcut in firefox:
+Solution:
+  https://superuser.com/questions/1533417/configure-disable-firefox-keyboard-shortcuts
+  location of file omni.ja -> 
+  C:\Program Files\Mozilla Firefox\browser
+  file to edit inside of omni.ja:
+  omni.ja -> chrome\browser\content\browser\browser.xhtml
+-> all keyboard shortcut will be disable except: ctrl + f4
+solution:
+  https://bugzilla.mozilla.org/show_bug.cgi?id=1692563
+  - location of file zipped omni.ja -> C:\Program Files\Mozilla Firefox\browser
+  - location for the file in omni.ja to be updated:
+    omni.ja -> chrome\browser\content\browser\tabbrowser.js
+  - remove below line from file tabbrowser.js:
+	  case ShortcutUtils.CLOSE_TAB:
+			  if (gBrowser.multiSelectedTabsCount) {
+				gBrowser.removeMultiSelectedTabs();
+			  } else if (!this.selectedTab.pinned) {
+				this.removeCurrentTab({ animate: true });
+			  }
+			  aEvent.preventDefault();
+   - Now the zip it back as omni.ja and put in the same location. now Ctrl + F4 will be disabled.
