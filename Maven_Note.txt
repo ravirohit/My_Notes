@@ -170,15 +170,26 @@ Ans:
    So here we need to do two steps, first we copy the jar file to the maven local repository and then add it's 
    dependency in the pom.xml file as follow:
    Solution 1: Using system dependency:
-			<dependencies>
-			  <dependency>
-				<groupId>com.example</groupId>
-				<artifactId>evalpostfix</artifactId>
-				<version>1.0</version>
-				<scope>system</scope>
-				<systemPath>${basedir}/lib/evalpostfix-1.0.jar</systemPath>
-			  </dependency>
-			</dependencies>
+            - add the dependency as system scope:
+				<dependencies>
+				  <dependency>
+					<groupId>com.example</groupId>
+					<artifactId>evalpostfix</artifactId>
+					<version>1.0</version>
+					<scope>system</scope>
+					<systemPath>${basedir}/lib/evalpostfix-1.0.jar</systemPath>
+				  </dependency>
+				</dependencies>
+			- after before statement, it will not throw you compile time error, but final executable jar will still not 
+			  package this jar in it. it assume, even at run time we will be providing jar on the system.
+			- to make it available in final executable jar, add below line of code as well:
+			     <plugin>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-maven-plugin</artifactId>
+					<configuration>
+						<includeSystemScope>true</includeSystemScope>   <!-- cause addition in executable jar -->
+					</configuration>
+				</plugin>
     Solution 2: Installing jar into local Maven repository
 	          <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -209,6 +220,8 @@ Ans:
 			</dependency>
 			Note: we get the artifact info of the jar file after opening it using 7 zip and open the pom.xml which will have 
 			requie info.
+	Solution 3:
+	     https://stackoverflow.com/questions/66830559/pom-file-configuration-to-package-external-custom-jar-file-in-the-fat-spring-boo
 			
 Q)  error: 
 	Description Resource Path Location Type Cannot change version of project facet Dynamic Web Module to 2.4.
